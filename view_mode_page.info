@@ -1,0 +1,5 @@
+name = View Mode Page
+description = Associate a URL pattern with a specific view mode for a node
+package = ADG
+core = 7.x
+

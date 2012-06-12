@@ -1,0 +1,29 @@
+<?php
+
+/**
+ * Implements hook_schema
+ */
+function view_mode_page_schema() {
+  $schema = array();
+  $schema['view_mode_page'] = array(
+    'fields' => array(
+      'content_type' => array(
+        'type' => 'varchar',
+        'length' => 55,
+        'not null' => true,
+      ),
+      'view_mode' => array(
+        'type' => 'varchar',
+        'length' => 55,
+        'not null' => true,
+      ),
+      'url_pattern' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => true,
+      )
+    ),
+    'primary key' => array('content_type', 'view_mode', 'url_pattern'),
+  );
+  return $schema;
+}

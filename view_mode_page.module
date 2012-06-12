@@ -1,0 +1,179 @@
+<?php
+/**
+ * Implements hook_page_alter
+ * 
+ * Add the tab to additional settings
+ */
+function view_mode_page_form_alter(&$form, $form_state, $form_id) {
+  $is_node_page = isset($form['#entity_type']) && $form['#entity_type'] == 'node';
+  $is_display_overview = isset($form['#id']) && $form['#id'] == 'field-ui-display-overview-form';
+  if (!$is_node_page || $is_node_page && !$is_display_overview) { return; }
+  
+  // add tab to the additional_settings
+  $form['view_mode_page_settings'] = array(
+    '#type' => 'fieldset',
+    '#title' => 'View mode pages',
+    '#collapsible' => true,
+    '#collapsed' => true,
+    '#group' => 'additional_settings',
+  );
+  
+  $form['view_mode_page_settings']['view_mode_page_url_pattern'] = array(
+    '#type' => 'textfield',
+    '#title' => 'URL Pattern',
+    '#description' => 'Provide a URL pattern for this page that will use this display mode',
+  );
+  
+  // get the value from the database and set it here
+  $definitions = view_mode_page_get_patterns($form['#bundle'], $form['#view_mode']);
+  if (isset($definitions[0])) {
+    $form['view_mode_page_settings']['view_mode_page_url_pattern']['#default_value'] = $definitions[0]->url_pattern;
+  }
+  
+  $form['#submit'][] = 'view_mode_page_form_submit';
+}
+
+/**
+ * 
+ */
+function view_mode_page_form_submit($form, &$form_state) {
+  $content_type = $form['#bundle'];
+  $view_mode = $form['#view_mode'];
+  
+  if (isset($form_state['values']['view_mode_page_url_pattern'])) {
+    view_mode_page_delete_patterns($content_type, $view_mode);
+    view_mode_page_add_pattern($content_type, $view_mode, $form_state['values']['view_mode_page_url_pattern']);
+  }
+}
+
+/**
+ * Implements hook_menu_alter
+ */
+function view_mode_page_menu_alter(&$items) {
+  $page_definitions = view_mode_page_get_patterns();
+  foreach ($page_definitions as $page) {
+    $pattern = $page->url_pattern;
+    $content_type = $page->content_type;
+    $view_mode = $page->view_mode;
+
+    // define or redefine our page
+    $page = array();
+    if (isset($items[$pattern])) {
+      $page = $items[$pattern];
+    }
+    
+    $page['page callback'] = 'view_mode_page_change_view_mode';
+    $page['page arguments'] = array($content_type, $view_mode, $pattern);
+    
+    if (!isset($page['access arguments'])) {      
+      $page['access arguments'] = array('access content');
+    }
+    
+    $items[$pattern] = $page;
+  }
+}
+
+/**
+ * Render the node with the given view mode
+ * 
+ * @param int $nid
+ * @param string $content_type
+ * @param string $view_mode
+ */
+function view_mode_page_change_view_mode($content_type, $view_mode, $pattern) {
+  // if the args are simply node/N we can get the node ID that way
+  if (arg(1) == 'node' && is_numeric(arg(2))) {
+    $nid = arg(2);
+  }
+  else {
+    // this is an alias, so we need to lookup the path of the node based on the pattern
+    //
+    // to do this, we look at the url_pattern for our view_mode_page and find what position
+    // the wildcard is in. based on this we can figure out what section of the path is likely
+    // the url/alias for the node.
+    $pattern_array = explode('/', $pattern);
+    $url_array = arg();
+    
+    // find the wildcard position in the pattern
+    $wildcard_positions = array_keys($pattern_array, '%');
+    $wildcard_position = array_pop($wildcard_positions) + 1;
+    
+    // create the node url/alias based on the wildcard position
+    $node_url = implode('/', array_slice($url_array, 0, $wildcard_position));
+    
+    // look that up...
+    $source_path = drupal_lookup_path('source', $node_url);
+    if (!$source_path) {
+      return drupal_not_found();
+    }
+    
+    // parse out the nid
+    $source_path_array = explode('/', $source_path);
+    $nid = array_pop($source_path_array);
+  }
+  
+  // load the node
+  $node = node_load($nid);
+  
+  // check that we only use this on the specified content types
+  if ($node->type != $content_type) {
+    return drupal_not_found();
+  }
+  
+  // view the node
+  return node_view($node, $view_mode);
+}
+
+/**
+ * Add a URL pattern to the database
+ */
+function view_mode_page_add_pattern($content_type, $view_mode, $pattern) {
+  $query = db_insert('view_mode_page');
+  return $query->fields(array(
+    'content_type' => $content_type,
+    'view_mode' => $view_mode,
+    'url_pattern' => $pattern
+  ))->execute();
+}
+
+/**
+ * Delete URL patterns from the database
+ */
+function view_mode_page_delete_patterns($content_type=null, $view_mode=null, $pattern=null) {
+  $query = db_delete('view_mode_page');
+  
+  if ($content_type) {
+    $query->condition('content_type', $content_type, '=');
+  }
+  
+  if ($view_mode) {
+    $query->condition('view_mode', $view_mode, '=');
+  }
+  
+  if ($pattern) {
+    $query->condition('url_pattern', $pattern, '=');
+  }
+  
+  return $query->execute();
+}
+
+/**
+ * Get URL patterns
+ * 
+ * @param string $content_type Optional limit to a specific content type
+ * @param string $view_mode Optionally limit to a specific view_mode
+ */
+function view_mode_page_get_patterns($content_type=null, $view_mode=null) {
+  $query = db_select('view_mode_page');
+  $query->fields('view_mode_page');
+  
+  if ($content_type) {
+    $query->condition('content_type', $content_type, '=');
+  }
+  
+  if ($view_mode) {
+    $query->condition('view_mode', $view_mode, '=');
+  }
+  
+  return $query->execute()->fetchAll();
+}

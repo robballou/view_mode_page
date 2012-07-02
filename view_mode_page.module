@@ -7,7 +7,7 @@ function view_mode_page_features_api() {
     'view_mode_page_pattern' => array(
       'name' => 'View mode page',
       'file' => drupal_get_path('module', 'view_mode_page') .'/view_mode_page.features.inc',
-      'default_hook' => 'view_mode_page_patten_default',
+      'default_hook' => 'view_mode_page_pattern_default',
       'features_source' => true
     ),
   );

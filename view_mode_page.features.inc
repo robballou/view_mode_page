@@ -8,27 +8,33 @@
  * Implements hook_features_export_options().
  *
  * @return array
+ *   A keyed array of items, suitable for use with a FormAPI select or
+ *   checkboxes element.
  */
 function view_mode_page_pattern_features_export_options() {
   $options = array();
-  
+
   $patterns = module_invoke('view_mode_page', 'get_patterns');
   foreach ($patterns as $pattern) {
     $name = $pattern->content_type . ':' . $pattern->view_mode;
     $options[$name] = $pattern->content_type . ': ' . $pattern->view_mode;
   }
-  
+
   return $options;
 }
 
 /**
  * Implements hook_features_export().
  *
- * @param array $data An array of machine names for the component in question to be exported.
- * @param array &$export By reference. An array of all components to be exported with a given feature. Component objects that should be exported should be added to this array.
+ * @param array $data 
+ *   An array of machine names for the component in question to be exported.
+ * @param array &$export 
+ *   By reference. An array of all components to be exported with a given 
+ *   feature. Component objects that should be exported should be added 
+ *   to this array.
  * @param string $module_name The name of the feature module to be generated.
- *
  * @return array
+ *   The pipe array of further processors that should be called.
  */
 function view_mode_page_pattern_features_export($data, &$export, $module_name) {
   $pipe = array();
@@ -46,11 +52,21 @@ function view_mode_page_pattern_features_export($data, &$export, $module_name) {
 /**
  * Implements hook_features_export_render().
  *
- * @param string $module_name The name of the feature module to be exported.
- * @param array $data An array of machine name identifiers for the objects to be rendered.
- * @param array $export The full export array of the current feature being exported. This is only passed when hook_features_export_render() is invoked for an actual feature update or recreate, not during state checks or other operations.
- *
+ * @param string $module_name 
+ *   The name of the feature module to be exported.
+ * @param array $data 
+ *   An array of machine name identifiers for the objects to be rendered.
+ * @param array $export 
+ *   The full export array of the current feature being exported. This is 
+ *   only passed when hook_features_export_render() is invoked for an actual 
+ *   feature update or recreate, not during state checks or other operations.
  * @return array
+ *   An associative array of rendered PHP code where the key is the name of the
+ *   hook that should wrap the PHP code. The hook should not include the name
+ *   of the module, e.g. the key for `hook_example` should simply be `example`
+ *   The values in the array can also be in the form of an associative array
+ *   with the required key of 'code' and optional key of 'args', if 'args' need
+ *   to be added to the hook.
  */
 function view_mode_page_pattern_features_export_render($module_name, $data, $export = NULL) {
   $code = array();
@@ -69,7 +85,8 @@ function view_mode_page_pattern_features_export_render($module_name, $data, $exp
 /**
  * Implements hook_features_export_rebuild().
  *
- * @param string $module The name of the feature module whose components should be rebuilt.
+ * @param string $module 
+ *   The name of the feature module whose components should be rebuilt.
  *
  * @return void
  */
@@ -91,7 +108,8 @@ function view_mode_page_pattern_features_rebuild($module) {
  *
  * Calls rebuild
  *
- * @param string $module The name of the feature module whose components should be reverted.
+ * @param string $module 
+ *   The name of the feature module whose components should be reverted.
  *
  * @return TRUE
  */

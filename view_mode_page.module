@@ -5,15 +5,15 @@
  */
 
 /**
- * Implements hook_features_api
+ * Implements hook_features_api().
  */
 function view_mode_page_features_api() {
   return array(
     'view_mode_page_pattern' => array(
       'name' => t('View mode page'),
-      'file' => drupal_get_path('module', 'view_mode_page') .'/view_mode_page.features.inc',
+      'file' => drupal_get_path('module', 'view_mode_page') . '/view_mode_page.features.inc',
       'default_hook' => 'view_mode_page_pattern_default',
-      'features_source' => TRUE
+      'features_source' => TRUE,
     ),
   );
 }
@@ -21,14 +21,16 @@ function view_mode_page_features_api() {
 /**
  * Implements hook_page_alter().
  *
- * Add the tab to additional settings
+ * Add the tab to additional settings.
  */
 function view_mode_page_form_alter(&$form, $form_state, $form_id) {
   $is_node_page = isset($form['#entity_type']) && $form['#entity_type'] == 'node';
   $is_display_overview = isset($form['#id']) && $form['#id'] == 'field-ui-display-overview-form';
-  if (!$is_node_page || $is_node_page && !$is_display_overview) { return; }
+  if (!$is_node_page || $is_node_page && !$is_display_overview) { 
+    return; 
+  }
 
-  // add tab to the additional_settings
+  // Add tab to the additional_settings
   $form['view_mode_page_settings'] = array(
     '#type' => 'fieldset',
     '#title' => t('View mode pages'),
@@ -43,7 +45,7 @@ function view_mode_page_form_alter(&$form, $form_state, $form_id) {
     '#description' => t('Provide a URL pattern for the page that will display view mode'),
   );
 
-  // get the value from the database and set it here
+  // Get the value from the database and set it here
   $definitions = view_mode_page_get_patterns($form['#bundle'], $form['#view_mode']);
   if (isset($definitions[0])) {
     $form['view_mode_page_settings']['view_mode_page_url_pattern']['#default_value'] = $definitions[0]->url_pattern;
@@ -53,10 +55,7 @@ function view_mode_page_form_alter(&$form, $form_state, $form_id) {
 }
 
 /**
- * Form submit handler for saving view mode page patterns
- *
- * @param array $form
- * @param array $form_state
+ * Form submit handler for saving view mode page patterns.
  */
 function view_mode_page_form_submit($form, &$form_state) {
   $content_type = $form['#bundle'];
@@ -79,7 +78,7 @@ function view_mode_page_menu_alter(&$items) {
     $content_type = $page->content_type;
     $view_mode = $page->view_mode;
 
-    // define or redefine our page
+    // Define or redefine our page
     $page = array();
     if (isset($items[$pattern])) {
       $page = $items[$pattern];
@@ -97,58 +96,68 @@ function view_mode_page_menu_alter(&$items) {
 }
 
 /**
- * Render the node with the given view mode
+ * Render the node with the given view mode.
  *
- * @param int $nid
  * @param string $content_type
+ *   The name of the content type that the pattern is used for.
  * @param string $view_mode
+ *   The name of the view mode.
+ * @param string $pattern
+ *   The URL pattern that is used in the hook_menu() call.
  */
 function view_mode_page_change_view_mode($content_type, $view_mode, $pattern) {
-  // if the args are simply node/N we can get the node ID that way
+  // If the args are simply node/N we can get the node ID that way
   if (arg(1) == 'node' && is_numeric(arg(2))) {
     $nid = arg(2);
   }
   else {
-    // this is an alias, so we need to lookup the path of the node based on the pattern
+    // This is an alias, so we need to lookup the path of the node based on the pattern
     //
-    // to do this, we look at the url_pattern for our view_mode_page and find what position
+    // To do this, we look at the url_pattern for our view_mode_page and find what position
     // the wildcard is in. based on this we can figure out what section of the path is likely
     // the url/alias for the node.
     $pattern_array = explode('/', $pattern);
     $url_array = arg();
 
-    // find the wildcard position in the pattern
+    // Find the wildcard position in the pattern
     $wildcard_positions = array_keys($pattern_array, '%');
     $wildcard_position = array_pop($wildcard_positions) + 1;
 
-    // create the node url/alias based on the wildcard position
+    // Create the node url/alias based on the wildcard position
     $node_url = implode('/', array_slice($url_array, 0, $wildcard_position));
 
-    // look that up...
+    // Look that up...
     $source_path = drupal_lookup_path('source', $node_url);
     if (!$source_path) {
       return drupal_not_found();
     }
 
-    // parse out the nid
+    // Parse out the nid
     $source_path_array = explode('/', $source_path);
     $nid = array_pop($source_path_array);
   }
 
-  // load the node
+  // Load the node
   $node = node_load($nid);
 
-  // check that we only use this on the specified content types
+  // Check that we only use this on the specified content types
   if ($node->type != $content_type) {
     return drupal_not_found();
   }
 
-  // view the node
+  // View the node
   return node_view($node, $view_mode);
 }
 
 /**
- * Add a URL pattern to the database
+ * Add a URL pattern to the database.
+ *
+ * @param string $content_type
+ *   The name of the content type that the pattern is used for.
+ * @param string $view_mode
+ *   The name of the view mode.
+ * @param string $pattern
+ *   The URL pattern that is used in the hook_menu() call.
  */
 function view_mode_page_add_pattern($content_type, $view_mode, $pattern) {
   $query = db_insert('view_mode_page');
@@ -166,10 +175,13 @@ function view_mode_page_add_pattern($content_type, $view_mode, $pattern) {
  * increases the specificity of the delete process.
  *
  * @param string $content_type
+ *   The name of the content type that the pattern is used for.
  * @param string $view_mode
+ *   The name of the view mode.
  * @param string $pattern
+ *   The URL pattern that is used in the hook_menu() call.
  */
-function view_mode_page_delete_patterns($content_type=null, $view_mode=null, $pattern=null) {
+function view_mode_page_delete_patterns($content_type = NULL, $view_mode = NULL, $pattern = NULL) {
   $query = db_delete('view_mode_page');
 
   if ($content_type) {
@@ -188,12 +200,14 @@ function view_mode_page_delete_patterns($content_type=null, $view_mode=null, $pa
 }
 
 /**
- * Get URL patterns
+ * Get URL patterns.
  *
- * @param string $content_type Optional limit to a specific content type
- * @param string $view_mode Optionally limit to a specific view_mode
+ * @param string $content_type
+ *   Optional limit to a specific content type.
+ * @param string $view_mode
+ *   Optionally limit to a specific view_mode.
  */
-function view_mode_page_get_patterns($content_type=null, $view_mode=null) {
+function view_mode_page_get_patterns($content_type = NULL, $view_mode = NULL) {
   $query = db_select('view_mode_page');
   $query->fields('view_mode_page');
 

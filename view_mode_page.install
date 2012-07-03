@@ -25,7 +25,7 @@ function view_mode_page_schema() {
         'type' => 'varchar',
         'length' => 255,
         'not null' => TRUE,
-      )
+      ),
     ),
     'primary key' => array('content_type', 'view_mode', 'url_pattern'),
   );

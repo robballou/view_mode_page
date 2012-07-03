@@ -106,12 +106,12 @@ function view_mode_page_menu_alter(&$items) {
  *   The URL pattern that is used in the hook_menu() call.
  */
 function view_mode_page_change_view_mode($content_type, $view_mode, $pattern) {
-  // If the args are simply node/N we can get the node ID that way
+  // If the args are simply node/N we can get the node ID that way.
   if (arg(1) == 'node' && is_numeric(arg(2))) {
     $nid = arg(2);
   }
   else {
-    // This is an alias, so we need to lookup the path of the node based on 
+    // This is an alias, so we need to lookup the path of the node based on
     // the pattern
     //
     // To do this, we look at the url_pattern for our view_mode_page and find
@@ -163,15 +163,15 @@ function view_mode_page_add_pattern($content_type, $view_mode, $pattern) {
   return $query->fields(array(
     'content_type' => $content_type,
     'view_mode' => $view_mode,
-    'url_pattern' => $pattern
+    'url_pattern' => $pattern,
   ))->execute();
 }
 
 /**
- * Delete URL patterns from the database
+ * Delete URL patterns from the database.
  *
- * The query may be used with no arguments or with one or more arguments. Each argument
- * increases the specificity of the delete process.
+ * The query may be used with no arguments or with one or more arguments. 
+ * Each argument increases the specificity of the delete process.
  *
  * @param string $content_type
  *   The name of the content type that the pattern is used for.

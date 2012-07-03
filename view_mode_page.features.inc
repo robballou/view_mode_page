@@ -1,10 +1,11 @@
 <?php
 /**
- * Integrate view mode page with the features module
+ * @file
+ * Integrate View Mode Page with the Features module
  */
 
 /**
- * Implements hook_features_export_options()
+ * Implements hook_features_export_options().
  * 
  * @return array
  */
@@ -21,7 +22,7 @@ function view_mode_page_pattern_features_export_options() {
 }
 
 /**
- * Implements hook_features_export()
+ * Implements hook_features_export().
  * 
  * @param array $data
  * @param array $export
@@ -42,7 +43,7 @@ function view_mode_page_pattern_features_export($data, &$export, $module_name) {
 }
 
 /**
- * Implements hook_features_export_render()
+ * Implements hook_features_export_render().
  *
  * @param string $module_name 
  * @param array $data 
@@ -64,7 +65,7 @@ function view_mode_page_pattern_features_export_render($module_name, $data, $exp
 }
 
 /**
- * Implements hook_features_export_rebuild()
+ * Implements hook_features_export_rebuild().
  *
  * @param string $module 
  * @return void
@@ -73,13 +74,17 @@ function view_mode_page_pattern_features_rebuild($module) {
   $items = module_invoke($module, 'view_mode_page_pattern_default');
   foreach ($items as $item) {
     db_merge('view_mode_page')
-      ->key(array('content_type' => $item[0]['content_type'], 'view_mode' => $item[0]['view_mode'], 'url_pattern' => $item[0]['url_pattern']))
+      ->key(array(
+        'content_type' => $item[0]['content_type'], 
+        'view_mode' => $item[0]['view_mode'], 
+        'url_pattern' => $item[0]['url_pattern']
+      ))
       ->execute();
   }
 }
 
 /**
- * Implements hook_features_revert()
+ * Implements hook_features_revert().
  * 
  * Calls rebuild
  *

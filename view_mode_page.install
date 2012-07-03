@@ -1,7 +1,11 @@
 <?php
+/**
+ * @file
+ * Install the DB table for the View Mode Page module
+ */
 
 /**
- * Implements hook_schema
+ * Implements hook_schema().
  */
 function view_mode_page_schema() {
   $schema = array();
@@ -10,17 +14,17 @@ function view_mode_page_schema() {
       'content_type' => array(
         'type' => 'varchar',
         'length' => 55,
-        'not null' => true,
+        'not null' => TRUE,
       ),
       'view_mode' => array(
         'type' => 'varchar',
         'length' => 55,
-        'not null' => true,
+        'not null' => TRUE,
       ),
       'url_pattern' => array(
         'type' => 'varchar',
         'length' => 255,
-        'not null' => true,
+        'not null' => TRUE,
       )
     ),
     'primary key' => array('content_type', 'view_mode', 'url_pattern'),

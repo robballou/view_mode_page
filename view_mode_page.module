@@ -5,7 +5,7 @@
 function view_mode_page_features_api() {
   return array(
     'view_mode_page_pattern' => array(
-      'name' => 'View mode page',
+      'name' => t('View mode page'),
       'file' => drupal_get_path('module', 'view_mode_page') .'/view_mode_page.features.inc',
       'default_hook' => 'view_mode_page_pattern_default',
       'features_source' => true
@@ -26,7 +26,7 @@ function view_mode_page_form_alter(&$form, $form_state, $form_id) {
   // add tab to the additional_settings
   $form['view_mode_page_settings'] = array(
     '#type' => 'fieldset',
-    '#title' => 'View mode pages',
+    '#title' => t('View mode pages'),
     '#collapsible' => true,
     '#collapsed' => true,
     '#group' => 'additional_settings',
@@ -34,7 +34,7 @@ function view_mode_page_form_alter(&$form, $form_state, $form_id) {
   
   $form['view_mode_page_settings']['view_mode_page_url_pattern'] = array(
     '#type' => 'textfield',
-    '#title' => 'URL Pattern',
+    '#title' => t('URL Pattern'),
     '#description' => 'Provide a URL pattern for this page that will use this display mode',
   );
   

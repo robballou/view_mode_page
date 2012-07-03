@@ -32,7 +32,7 @@ function view_mode_page_pattern_features_export_options() {
  *   By reference. An array of all components to be exported with a given
  *   feature. Component objects that should be exported should be added
  *   to this array.
- * @param string $module_name 
+ * @param string $module_name
  *   The name of the feature module to be generated.
  * @return array
  *   The pipe array of further processors that should be called.
@@ -88,8 +88,6 @@ function view_mode_page_pattern_features_export_render($module_name, $data, $exp
  *
  * @param string $module
  *   The name of the feature module whose components should be rebuilt.
- *
- * @return void
  */
 function view_mode_page_pattern_features_rebuild($module) {
   $items = module_invoke($module, 'view_mode_page_pattern_default');
@@ -111,8 +109,6 @@ function view_mode_page_pattern_features_rebuild($module) {
  *
  * @param string $module
  *   The name of the feature module whose components should be reverted.
- *
- * @return TRUE
  */
 function view_mode_page_pattern_features_revert($module) {
   view_mode_page_pattern_features_rebuild($module);

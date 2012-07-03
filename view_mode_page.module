@@ -35,7 +35,7 @@ function view_mode_page_form_alter(&$form, $form_state, $form_id) {
   $form['view_mode_page_settings']['view_mode_page_url_pattern'] = array(
     '#type' => 'textfield',
     '#title' => t('URL Pattern'),
-    '#description' => 'Provide a URL pattern for this page that will use this display mode',
+    '#description' => t('Provide a URL pattern for the page that will display view mode'),
   );
   
   // get the value from the database and set it here

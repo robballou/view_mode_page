@@ -26,11 +26,11 @@ function view_mode_page_features_api() {
 function view_mode_page_form_alter(&$form, $form_state, $form_id) {
   $is_node_page = isset($form['#entity_type']) && $form['#entity_type'] == 'node';
   $is_display_overview = isset($form['#id']) && $form['#id'] == 'field-ui-display-overview-form';
-  if (!$is_node_page || $is_node_page && !$is_display_overview) { 
-    return; 
+  if (!$is_node_page || $is_node_page && !$is_display_overview) {
+    return;
   }
 
-  // Add tab to the additional_settings
+  // Add tab to the additional_settings.
   $form['view_mode_page_settings'] = array(
     '#type' => 'fieldset',
     '#title' => t('View mode pages'),
@@ -45,7 +45,7 @@ function view_mode_page_form_alter(&$form, $form_state, $form_id) {
     '#description' => t('Provide a URL pattern for the page that will display view mode'),
   );
 
-  // Get the value from the database and set it here
+  // Get the value from the database and set it here.
   $definitions = view_mode_page_get_patterns($form['#bundle'], $form['#view_mode']);
   if (isset($definitions[0])) {
     $form['view_mode_page_settings']['view_mode_page_url_pattern']['#default_value'] = $definitions[0]->url_pattern;
@@ -78,7 +78,7 @@ function view_mode_page_menu_alter(&$items) {
     $content_type = $page->content_type;
     $view_mode = $page->view_mode;
 
-    // Define or redefine our page
+    // Define or redefine our page.
     $page = array();
     if (isset($items[$pattern])) {
       $page = $items[$pattern];
@@ -111,19 +111,20 @@ function view_mode_page_change_view_mode($content_type, $view_mode, $pattern) {
     $nid = arg(2);
   }
   else {
-    // This is an alias, so we need to lookup the path of the node based on the pattern
+    // This is an alias, so we need to lookup the path of the node based on 
+    // the pattern
     //
-    // To do this, we look at the url_pattern for our view_mode_page and find what position
-    // the wildcard is in. based on this we can figure out what section of the path is likely
-    // the url/alias for the node.
+    // To do this, we look at the url_pattern for our view_mode_page and find
+    // what position the wildcard is in. based on this we can figure out what
+    // section of the path is likely the url/alias for the node.
     $pattern_array = explode('/', $pattern);
     $url_array = arg();
 
-    // Find the wildcard position in the pattern
+    // Find the wildcard position in the pattern.
     $wildcard_positions = array_keys($pattern_array, '%');
     $wildcard_position = array_pop($wildcard_positions) + 1;
 
-    // Create the node url/alias based on the wildcard position
+    // Create the node url/alias based on the wildcard position.
     $node_url = implode('/', array_slice($url_array, 0, $wildcard_position));
 
     // Look that up...
@@ -132,20 +133,18 @@ function view_mode_page_change_view_mode($content_type, $view_mode, $pattern) {
       return drupal_not_found();
     }
 
-    // Parse out the nid
+    // Parse out the nid.
     $source_path_array = explode('/', $source_path);
     $nid = array_pop($source_path_array);
   }
 
-  // Load the node
   $node = node_load($nid);
 
-  // Check that we only use this on the specified content types
+  // Check that we only use this on the specified content types.
   if ($node->type != $content_type) {
     return drupal_not_found();
   }
 
-  // View the node
   return node_view($node, $view_mode);
 }
 

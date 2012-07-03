@@ -170,7 +170,7 @@ function view_mode_page_add_pattern($content_type, $view_mode, $pattern) {
 /**
  * Delete URL patterns from the database.
  *
- * The query may be used with no arguments or with one or more arguments. 
+ * The query may be used with no arguments or with one or more arguments.
  * Each argument increases the specificity of the delete process.
  *
  * @param string $content_type

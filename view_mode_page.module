@@ -26,7 +26,7 @@ function view_mode_page_features_api() {
 function view_mode_page_form_alter(&$form, $form_state, $form_id) {
   $is_node_page = isset($form['#entity_type']) && $form['#entity_type'] == 'node';
   $is_display_overview = isset($form['#id']) && $form['#id'] == 'field-ui-display-overview-form';
-  if (!$is_node_page || $is_node_page && !$is_display_overview) {
+  if (!$is_node_page || ($is_node_page && !$is_display_overview)) {
     return;
   }
 

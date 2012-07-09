@@ -18,7 +18,9 @@ HOW TO ADD A VIEW MODE PAGE
 ---------------------------
 
 1. Create a content type
-2. Configure a view mode. If you are using Display Suite, or another means of adding view modes, you may need to add a new one.
+2. Configure a view mode. If you are using Display Suite, or another means of 
+   adding view modes, you may need to add a new one.
 3. Go to the "manage display" tab for your content type.
 4. In the "View mode pages" tab, enter your URL pattern for the view mode page.
-5. Save the content type. You may also need to clear the Drupal cache, but the page should be available!
+5. Save the content type. You may also need to clear the Drupal cache, but the 
+   page should be available!

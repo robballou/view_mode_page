@@ -66,6 +66,7 @@ function view_mode_page_pattern_features_rebuild($module) {
       ))
       ->execute();
   }
+  menu_rebuild();
 }
 
 /**

@@ -64,7 +64,7 @@ function view_mode_page_form_submit($form, &$form_state) {
   if (isset($form_state['values']['view_mode_page_url_pattern'])) {
     view_mode_page_delete_patterns($content_type, $view_mode);
     view_mode_page_add_pattern($content_type, $view_mode, $form_state['values']['view_mode_page_url_pattern']);
-    drupal_flush_all_caches();
+    menu_rebuild();
   }
 }
 
@@ -150,6 +150,9 @@ function view_mode_page_change_view_mode($content_type, $view_mode, $pattern) {
 
 /**
  * Add a URL pattern to the database.
+ * 
+ * This does not add the pattern to the menu_router table, but only
+ * adds it to the View Mode Page table.
  *
  * @param string $content_type
  *   The name of the content type that the pattern is used for.
@@ -172,6 +175,9 @@ function view_mode_page_add_pattern($content_type, $view_mode, $pattern) {
  *
  * The query may be used with no arguments or with one or more arguments.
  * Each argument increases the specificity of the delete process.
+ * 
+ * This does not necessarily effect the patterns saved in the menu_router
+ * table. It only removes the patterns from the View Mode Page table.
  *
  * @param string $content_type
  *   The name of the content type that the pattern is used for.

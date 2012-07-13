@@ -107,8 +107,8 @@ function view_mode_page_menu_alter(&$items) {
  */
 function view_mode_page_change_view_mode($content_type, $view_mode, $pattern) {
   // If the args are simply node/N we can get the node ID that way.
-  if (arg(1) == 'node' && is_numeric(arg(2))) {
-    $nid = arg(2);
+  if (arg(0) == 'node' && is_numeric(arg(1))) {
+    $nid = arg(1);
   }
   else {
     // This is an alias, so we need to lookup the path of the node based on

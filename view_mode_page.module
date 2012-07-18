@@ -30,16 +30,30 @@ function view_mode_page_form_alter(&$form, $form_state, $form_id) {
     return;
   }
 
+  // Add additional settings vertical tab, if it does not currently exist.
+  // This code was borrowed from display suite
+  if (!isset($form['additional_settings'])) {
+    $form['additional_settings'] = array(
+      '#type' => 'vertical_tabs',
+      '#theme_wrappers' => array('vertical_tabs'),
+      '#prefix' => '<div>',
+      '#suffix' => '</div>',
+      '#tree' => TRUE,
+    );
+    $form['#attached']['js'][] = 'misc/form.js';
+    $form['#attached']['js'][] = 'misc/collapse.js';
+  }
+
   // Add tab to the additional_settings.
-  $form['view_mode_page_settings'] = array(
+  $form['additional_settings']['view_mode_page_settings'] = array(
     '#type' => 'fieldset',
     '#title' => t('View mode pages'),
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
-    '#group' => 'additional_settings',
+    '#weight' => 10
   );
 
-  $form['view_mode_page_settings']['view_mode_page_url_pattern'] = array(
+  $form['additional_settings']['view_mode_page_settings']['view_mode_page_url_pattern'] = array(
     '#type' => 'textfield',
     '#title' => t('URL Pattern'),
     '#description' => t('Provide a URL pattern for the page that will display view mode'),
@@ -48,7 +62,7 @@ function view_mode_page_form_alter(&$form, $form_state, $form_id) {
   // Get the value from the database and set it here.
   $definitions = view_mode_page_get_patterns($form['#bundle'], $form['#view_mode']);
   if (isset($definitions[0])) {
-    $form['view_mode_page_settings']['view_mode_page_url_pattern']['#default_value'] = $definitions[0]->url_pattern;
+    $form['additional_settings']['view_mode_page_settings']['view_mode_page_url_pattern']['#default_value'] = $definitions[0]->url_pattern;
   }
 
   $form['#submit'][] = 'view_mode_page_form_submit';

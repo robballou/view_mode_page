@@ -77,9 +77,13 @@ function view_mode_page_form_submit($form, &$form_state) {
   $content_type = $form['#bundle'];
   $view_mode = $form['#view_mode'];
 
-  if (isset($form_state['values']['view_mode_page_url_pattern'])) {
+  if (isset($form_state['values']['additional_settings']['view_mode_page_settings']['view_mode_page_url_pattern'])) {
     view_mode_page_delete_patterns($content_type, $view_mode);
-    view_mode_page_add_pattern($content_type, $view_mode, $form_state['values']['view_mode_page_url_pattern']);
+    view_mode_page_add_pattern(
+      $content_type, 
+      $view_mode, 
+      $form_state['values']['additional_settings']['view_mode_page_settings']['view_mode_page_url_pattern']
+    );
     menu_rebuild();
   }
 }

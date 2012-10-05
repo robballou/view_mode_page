@@ -5,9 +5,10 @@
  */
 
 /**
- * Implements hook_schema().
+ * Just return the current schema
+ * @return array
  */
-function view_mode_page_schema() {
+function view_mode_page_module_schema() {
   $schema = array();
   $schema['view_mode_page'] = array(
     'fields' => array(
@@ -26,8 +27,34 @@ function view_mode_page_schema() {
         'length' => 255,
         'not null' => TRUE,
       ),
+      'show_title' => array(
+        'type' => 'int',
+        'default' => 0,
+      ),
+      'title' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      )
     ),
     'primary key' => array('content_type', 'view_mode', 'url_pattern'),
   );
   return $schema;
+}
+
+/**
+ * Implements hook_schema().
+ */
+function view_mode_page_schema() {
+  return view_mode_page_module_schema();
+}
+
+/**
+ * Add title and show title fields.
+ */
+function view_mode_page_update_7100() {
+  $schema = view_mode_page_module_schema();
+  db_add_field('view_mode_page', 'show_title', $schema['view_mode_page']['fields']['show_title']);
+  db_add_field('view_mode_page', 'title', $schema['view_mode_page']['fields']['title']);
 }

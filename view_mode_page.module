@@ -58,11 +58,23 @@ function view_mode_page_form_alter(&$form, $form_state, $form_id) {
     '#title' => t('URL Pattern'),
     '#description' => t('Provide a URL pattern for the page that will display view mode'),
   );
+  $form['additional_settings']['view_mode_page_settings']['view_mode_page_show_title'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Show title on the view mode page'),
+    '#description' => t('This option will show the title on the view mode page. By default, this will be the node title or the title provided below')
+  );
+  $form['additional_settings']['view_mode_page_settings']['view_mode_page_title'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Title'),
+    '#description' => 'Specify an alternate title for the view mode page. You may include tokens as they relate to the node (e.g., <code>[node:title]</code>). <strong>The show title option must be on for this to show up!</strong>'
+  );
 
   // Get the value from the database and set it here.
   $definitions = view_mode_page_get_patterns($form['#bundle'], $form['#view_mode']);
   if (isset($definitions[0])) {
     $form['additional_settings']['view_mode_page_settings']['view_mode_page_url_pattern']['#default_value'] = $definitions[0]->url_pattern;
+    $form['additional_settings']['view_mode_page_settings']['view_mode_page_show_title']['#default_value'] = $definitions[0]->show_title;
+    $form['additional_settings']['view_mode_page_settings']['view_mode_page_title']['#default_value'] = $definitions[0]->title;
   }
 
   $form['#submit'][] = 'view_mode_page_form_submit';
@@ -81,7 +93,9 @@ function view_mode_page_form_submit($form, &$form_state) {
     view_mode_page_add_pattern(
       $content_type,
       $view_mode,
-      $form_state['values']['additional_settings']['view_mode_page_settings']['view_mode_page_url_pattern']
+      $form_state['values']['additional_settings']['view_mode_page_settings']['view_mode_page_url_pattern'],
+      $form_state['values']['additional_settings']['view_mode_page_settings']['view_mode_page_show_title'],
+      $form_state['values']['additional_settings']['view_mode_page_settings']['view_mode_page_title']
     );
     menu_rebuild();
   }
@@ -96,6 +110,8 @@ function view_mode_page_menu_alter(&$items) {
     $pattern = $page->url_pattern;
     $content_type = $page->content_type;
     $view_mode = $page->view_mode;
+    $show_title = $page->show_title;
+    $title = $page->title;
 
     // Define or redefine our page.
     $page = array();
@@ -104,7 +120,7 @@ function view_mode_page_menu_alter(&$items) {
     }
 
     $page['page callback'] = 'view_mode_page_change_view_mode';
-    $page['page arguments'] = array($content_type, $view_mode, $pattern);
+    $page['page arguments'] = array($content_type, $view_mode, $pattern, $show_title, $title);
 
     if (!isset($page['access arguments'])) {
       $page['access arguments'] = array('access content');
@@ -124,7 +140,7 @@ function view_mode_page_menu_alter(&$items) {
  * @param string $pattern
  *   The URL pattern that is used in the hook_menu() call.
  */
-function view_mode_page_change_view_mode($content_type, $view_mode, $pattern) {
+function view_mode_page_change_view_mode($content_type, $view_mode, $pattern, $show_title = FALSE, $title = '') {
   // If the args are simply node/N we can get the node ID that way.
   if (arg(0) == 'node' && is_numeric(arg(1))) {
     $nid = arg(1);
@@ -167,6 +183,14 @@ function view_mode_page_change_view_mode($content_type, $view_mode, $pattern) {
   $node = module_invoke_all('view_mode_page_pre_view', $node, $content_type, $view_mode, $pattern);
   $node = $node[0];
   $view = node_view($node, $view_mode);
+  if ($show_title) {
+    if (!$title && isset($node->title)) {
+      $title = $node->title;
+    }
+    $tokenData = array('node' => $node);
+    $title = token_replace($title, $tokenData);
+    drupal_set_title($title);
+  }
   $view = module_invoke_all('view_mode_page_post_view', $node, $view, $content_type, $view_mode, $pattern);
   return $view;
 }
@@ -184,12 +208,14 @@ function view_mode_page_change_view_mode($content_type, $view_mode, $pattern) {
  * @param string $pattern
  *   The URL pattern that is used in the hook_menu() call.
  */
-function view_mode_page_add_pattern($content_type, $view_mode, $pattern) {
+function view_mode_page_add_pattern($content_type, $view_mode, $pattern, $show_title = FALSE, $title = '') {
   $query = db_insert('view_mode_page');
   $result = $query->fields(array(
       'content_type' => $content_type,
       'view_mode' => $view_mode,
       'url_pattern' => $pattern,
+      'show_title' => intval($show_title),
+      'title' => $title
     ))->execute();
 
   module_invoke_all('view_mode_page_pattern_added', $content_type, $view_mode, $pattern, $result);

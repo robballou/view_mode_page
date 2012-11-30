@@ -59,6 +59,8 @@ Recent versions also include some API hooks:
 - hook_view_mode_page_pattern_added
 - hook_view_mode_page_patterns_deleted
 
+More information about the hooks can be found in the `view_mode_page.api.php` file.
+
 [pathauto]: http://drupal.org/project/pathauto
 [ds]: http://drupal.org/project/ds
 [hook]: http://api.drupal.org/api/drupal/modules%21system%21system.api.php/function/hook_menu_alter/7

@@ -36,6 +36,7 @@ called Project, we can:
    alias is part of the pattern. In this case, we'd use `project/%/my-view-mode` in
    the View Mode Page settings. The wildcard character, `%`, will take the place of the
    project title from the alias.
+4. Our View Mode Page will now be accessible as: `project/my-example/my-view-mode`
 
 View Mode Page uses [`hook_menu_alter`][hook] to add the exact pattern you specify
 as a menu route. The wildcard character should be used for variable parts of
@@ -47,7 +48,7 @@ If our Project could have a category, our Pathauto pattern may be:
 
 In this case, our View Mode Page pattern will need two wildcards:
 
-    category/%/%
+    category/%/%/my-view-mode
 
 # API
 

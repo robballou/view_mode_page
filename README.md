@@ -1,4 +1,4 @@
-# INTRODUCTION
+# Introduction
 
 Create separate pages for different view modes for a given content type.
 
@@ -13,7 +13,7 @@ Restrictions: currently, the node path must be contained in the URL. This means
 view mode pages must follow the form [node path/node alias]/[view mode url].
 These pages are added via hook_menu. Multiple wildcard characters can be used.
 
-# HOW TO ADD A VIEW MODE PAGE
+# How to add a View Mode Page
 
 1. Create a content type
 2. Configure a view mode. If you are using Display Suite, or another means of
@@ -51,7 +51,7 @@ In this case, our View Mode Page pattern will need two wildcards:
 
 # API
 
-A recent development version added a few hooks:
+Recent versions also include some API hooks:
 
 - hook_view_mode_page_get_patterns
 - hook_view_mode_page_pre_view

@@ -16,6 +16,7 @@ function view_mode_page_module_schema() {
         'type' => 'varchar',
         'length' => 55,
         'not null' => TRUE,
+        'description' => 'The bundle for this entity'
       ),
       'view_mode' => array(
         'type' => 'varchar',
@@ -26,6 +27,13 @@ function view_mode_page_module_schema() {
         'type' => 'varchar',
         'length' => 255,
         'not null' => TRUE,
+      ),
+      'entity_type' => array(
+        'type' => 'varchar',
+        'length' => 55,
+        'not null' => TRUE,
+        'default' => 'node',
+        'description' => 'The entity type for this node',
       ),
       'show_title' => array(
         'type' => 'int',
@@ -57,4 +65,12 @@ function view_mode_page_update_7100() {
   $schema = view_mode_page_module_schema();
   db_add_field('view_mode_page', 'show_title', $schema['view_mode_page']['fields']['show_title']);
   db_add_field('view_mode_page', 'title', $schema['view_mode_page']['fields']['title']);
+}
+
+/**
+ * Add the entity_type field
+ */
+function view_mode_page_update_7101() {
+  $schema = view_mode_page_module_schema();
+  db_add_field('view_mode_page', 'entity_type', $schema['view_mode_page']['fields']['entity_type']);
 }

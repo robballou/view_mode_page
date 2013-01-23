@@ -24,6 +24,7 @@ function view_mode_page_features_api() {
  * Add the tab to additional settings.
  */
 function view_mode_page_form_alter(&$form, $form_state, $form_id) {
+  // @todo node entity type specified
   $is_node_page = isset($form['#entity_type']) && $form['#entity_type'] == 'node';
   $is_display_overview = isset($form['#id']) && $form['#id'] == 'field-ui-display-overview-form';
   if (!$is_node_page || ($is_node_page && !$is_display_overview)) {
@@ -142,6 +143,7 @@ function view_mode_page_menu_alter(&$items) {
  */
 function view_mode_page_change_view_mode($content_type, $view_mode, $pattern, $show_title = FALSE, $title = '') {
   // If the args are simply node/N we can get the node ID that way.
+  // @todo node specified
   if (arg(0) == 'node' && is_numeric(arg(1))) {
     $nid = arg(1);
   }
@@ -173,6 +175,7 @@ function view_mode_page_change_view_mode($content_type, $view_mode, $pattern, $s
     $nid = array_pop($source_path_array);
   }
 
+  // @todo node specific
   $node = node_load($nid);
 
   // Check that we only use this on the specified content types.
@@ -180,6 +183,7 @@ function view_mode_page_change_view_mode($content_type, $view_mode, $pattern, $s
     return drupal_not_found();
   }
 
+  // @todo node specific
   $node = module_invoke_all('view_mode_page_pre_view', $node, $content_type, $view_mode, $pattern);
   $node = $node[0];
   $view = node_view($node, $view_mode);
@@ -187,6 +191,7 @@ function view_mode_page_change_view_mode($content_type, $view_mode, $pattern, $s
     if (!$title && isset($node->title)) {
       $title = $node->title;
     }
+    // @todo node specific
     $tokenData = array('node' => $node);
     $title = token_replace($title, $tokenData);
     drupal_set_title($title);

@@ -24,7 +24,7 @@ function view_mode_page_module_schema() {
       ),
       'url_pattern' => array(
         'type' => 'varchar',
-        'length' => 255,
+        'length' => 200,
         'not null' => TRUE,
       ),
       'show_title' => array(

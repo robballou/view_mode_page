@@ -67,6 +67,7 @@ function view_mode_page_form_alter(&$form, $form_state, $form_id) {
   $form['additional_settings']['view_mode_page_settings']['view_mode_page_title'] = array(
     '#type' => 'textfield',
     '#title' => t('Title'),
+    '#maxlength' => 200,
     '#description' => 'Specify an alternate title for the view mode page. You may include tokens as they relate to the node (e.g., <code>[node:title]</code>). <strong>The show title option must be on for this to show up!</strong>'
   );
 

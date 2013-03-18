@@ -6,7 +6,7 @@
 
 /**
  * Just return the current schema
- * @return array
+ * @return array Schema array
  */
 function view_mode_page_module_schema() {
   $schema = array();
@@ -16,7 +16,7 @@ function view_mode_page_module_schema() {
         'type' => 'varchar',
         'length' => 55,
         'not null' => TRUE,
-        'description' => 'The bundle for this entity'
+        'description' => 'The bundle for this entity',
       ),
       'view_mode' => array(
         'type' => 'varchar',
@@ -44,9 +44,10 @@ function view_mode_page_module_schema() {
         'length' => 255,
         'not null' => TRUE,
         'default' => '',
-      )
+      ),
     ),
     'primary key' => array('content_type', 'view_mode', 'url_pattern'),
+    'index' => array('entity_type' => array('entity_type')),
   );
   return $schema;
 }
@@ -73,4 +74,10 @@ function view_mode_page_update_7100() {
 function view_mode_page_update_7101() {
   $schema = view_mode_page_module_schema();
   db_add_field('view_mode_page', 'entity_type', $schema['view_mode_page']['fields']['entity_type']);
+  $update = db_update('view_mode_page')
+  $update
+    ->fields(array(
+    'entity_type' => 'node',
+    ))
+    ->execute();
 }

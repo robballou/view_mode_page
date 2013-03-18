@@ -298,6 +298,8 @@ function view_mode_page_get_patterns($content_type = NULL, $view_mode = NULL) {
 /**
  * Returns all the entity types that exist for VMP
  *
+ * @todo Add a hook to after retrieving from the DB
+ *
  * @return array Array of entity types used by VMPs
  */
 function view_mode_page_get_entity_types() {
@@ -325,6 +327,8 @@ function view_mode_page_view_mode_page_get_patterns($results, $content_type, $vi
 
 /**
  * Implements hook_view_mode_page_pre_view().
+ *
+ * @todo references node
  */
 function view_mode_page_view_mode_page_pre_view($node, $content_type, $view_mode, $pattern) {
   return $node;
@@ -332,6 +336,8 @@ function view_mode_page_view_mode_page_pre_view($node, $content_type, $view_mode
 
 /**
  * Implements hook_view_mode_page_post_view().
+ *
+ * @todo references node
  */
 function view_mode_page_view_mode_page_post_view($node, $view, $content_type, $view_mode, $pattern) {
   return $view;

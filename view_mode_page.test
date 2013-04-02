@@ -1,0 +1,90 @@
+<?php
+/**
+ * Tests
+ */
+class ViewModePageTestCase extends DrupalWebTestCase {
+  public $user;
+
+  public static function getInfo() {
+    return array(
+      'name' => 'Code API Tests',
+      'description' => 'Unittests for the VMP module',
+      'group' => 'View Mode Page',
+    );
+  }
+
+  public function setUp() {
+    parent::setUp('view_mode_page');
+  }
+
+  /**
+   * Make sure the number of patterns in the database are what we expect
+   *
+   * @param int $number
+   */
+  public function assertNumberOfPatterns($number) {
+    $patterns = view_mode_page_get_entity_patterns();
+    $term = 'patterns';
+    if ($number == 1) {
+      $term = 'pattern';
+    }
+    $this->assertEqual(count($patterns), $number, 'There should be ' . $number . ' ' . $term . ', found: ' . count($patterns));
+  }
+
+  /**
+   * Assert that an entity pattern exists as we intended
+   */
+  public function assertEntityPattern($entity_type, $content_type, $view_mode, $url_pattern, $show_title = FALSE, $title = '') {
+    $patterns = view_mode_page_get_entity_patterns($entity_type, $content_type, $view_mode);
+    $this->assertEqual(count($patterns), 1, 'There should be 1 pattern, found: ' . count($patterns));
+    if (count($patterns) > 0) {
+      $this->assertEqual($patterns[0]->url_pattern, $url_pattern, 'The patterns do not match');
+    }
+  }
+
+  /**
+   * Assert that a pattern exists as we intended
+   */
+  public function assertPattern($content_type, $view_mode, $url_pattern, $show_title = FALSE, $title = '') {
+    $this->assertEntityPattern('node', $content_type, $view_mode, $url_pattern, $show_title, $title);
+  }
+
+  /**
+   * Test adding a pattern with the entity based function
+   */
+  public function testAddEntityPattern() {
+    // make sure we have no patterns
+    $this->assertNumberOfPatterns(0);
+
+    // add a pattern
+    view_mode_page_add_entity_pattern(array(
+      'entity_type' => 'node',
+      'content_type' => 'blog_post',
+      'view_mode' => 'teaser',
+      'url_pattern' => 'blog/%/teaser',
+    ));
+
+    // make sure we have 1 pattern
+    $this->assertNumberOfPatterns(1);
+
+    // check out pattern
+    $this->assertEntityPattern('entity', 'blog_post', 'teaser', 'blog/%/teaser');
+  }
+
+  /**
+   * Test adding a pattern with the non-entity based function
+   */
+  public function testAddPattern() {
+    // make sure we have no patterns
+    $this->assertNumberOfPatterns(0);
+
+    // add a pattern
+    view_mode_page_add_pattern('blog_post', 'teaser', 'blog/%/teaser');
+
+    // // make sure we have 1 pattern
+    $this->assertNumberOfPatterns(1);
+
+    // check out pattern
+    $this->assertPattern('blog_post', 'teaser', 'blog/%/teaser');
+  }
+}

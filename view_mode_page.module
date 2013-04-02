@@ -208,10 +208,40 @@ function view_mode_page_change_view_mode($content_type, $view_mode, $pattern, $s
 }
 
 /**
- * Add a URL pattern to the database.
+ * Check the arguments for new array-based parameters
+ *
+ * @param array $settings
+ *   Parameters from the function call
+ * @param array $required_fields
+ *   Array of required 'fields' in the array
+ * @param array $defaults
+ *   Array of default values
+ */
+function view_mode_page_assert_settings($settings, $required_fields, $defaults) {
+  $params = array_replace($defaults, $settings);
+  $errors = array();
+  foreach ($required_fields as $key_name) {
+    if (!isset($params[$key_name])) {
+      $errors[] = $key_name;
+    }
+  }
+  if (count($errors) > 0) {
+    $message = 'Missing settings in function call: ' . implode(',', $errors);
+    throw new Exception($message);
+  }
+  return $params;
+}
+
+/**
+ * Deprecated: Add a URL pattern to the database.
  *
  * This does not add the pattern to the menu_router table, but only
  * adds it to the View Mode Page table.
+ *
+ * This method is deprecated and could disappear in future versions. With
+ * entity support, you should use view_mode_page_add_entity_pattern.
+ *
+ * @see view_mode_page_add_entity_pattern
  *
  * @param string $content_type
  *   The name of the content type that the pattern is used for.
@@ -219,18 +249,63 @@ function view_mode_page_change_view_mode($content_type, $view_mode, $pattern, $s
  *   The name of the view mode.
  * @param string $pattern
  *   The URL pattern that is used in the hook_menu() call.
+ *
+ * @deprecated
  */
 function view_mode_page_add_pattern($content_type, $view_mode, $pattern, $show_title = FALSE, $title = '') {
+  return view_mode_page_add_entity_pattern(array(
+    'content_type' => $content_type,
+    'view_mode' => $view_mode,
+    'url_pattern' => $pattern,
+    'show_title' => $show_title,
+    'title' => $title,
+  ));
+}
+
+/**
+ * Add a URL pattern to the database.
+ *
+ * This does not add the pattern to the menu_router table, but only
+ * adds it to the View Mode Page table.
+ *
+ * With entity support, we needed new arguments so this pattern was going to
+ * change. The function takes a single argument: an array of possible
+ * settings which include:
+ *
+ * - content_type
+ * - entity_type
+ * - url_pattern
+ * - show_title
+ * - title
+ * - view_mode
+ *
+ * Triggers two hooks: view_mode_page_entity_pattern_added and
+ * view_mode_page_pattern_added. The first hook is preferred and the second may
+ * disappear in future versions.
+ *
+ * @param array $settings
+ *   An array of settings
+ */
+function view_mode_page_add_entity_pattern($settings) {
+  $settings = view_mode_page_assert_settings(
+    $settings,
+    array('content_type', 'url_pattern', 'view_mode'),
+    array('entity_type' => 'node', 'show_title' => FALSE, 'title' => '')
+  );
+
   $query = db_insert('view_mode_page');
   $result = $query->fields(array(
-      'content_type' => $content_type,
-      'view_mode' => $view_mode,
-      'url_pattern' => $pattern,
-      'show_title' => intval($show_title),
-      'title' => $title,
+      'content_type' => $settings['content_type'],
+      'view_mode' => $settings['view_mode'],
+      'url_pattern' => $settings['url_pattern'],
+      'show_title' => intval($settings['show_title']),
+      'title' => $settings['title'],
+      'entity_type' => $settings['entity_type'],
     ))->execute();
 
-  module_invoke_all('view_mode_page_pattern_added', $content_type, $view_mode, $pattern, $result);
+  // invoke our hooks
+  module_invoke_all('view_mode_page_pattern_added', $settings['content_type'], $settings['view_mode'], $settings['url_pattern'], $result);
+  module_invoke_all('view_mode_page_entity_pattern_added', $settings['entity_type'], $settings['content_type'], $settings['view_mode'], $settings['url_pattern'], $result);
   return $result;
 }
 
@@ -278,9 +353,13 @@ function view_mode_page_delete_patterns($content_type = NULL, $view_mode = NULL,
  * @param string $view_mode
  *   Optionally limit to a specific view_mode.
  */
-function view_mode_page_get_patterns($content_type = NULL, $view_mode = NULL) {
+function view_mode_page_get_entity_patterns($entity_type = NULL, $content_type = NULL, $view_mode = NULL) {
   $query = db_select('view_mode_page');
   $query->fields('view_mode_page');
+
+  if ($entity_type) {
+    $query->condition('entity_type', $entity_type, '=');
+  }
 
   if ($content_type) {
     $query->condition('content_type', $content_type, '=');
@@ -291,8 +370,21 @@ function view_mode_page_get_patterns($content_type = NULL, $view_mode = NULL) {
   }
 
   $results = $query->execute()->fetchAll();
+  $results = module_invoke_all('view_mode_page_get_entity_patterns', $results, $entity_type, $content_type, $view_mode);
   $results = module_invoke_all('view_mode_page_get_patterns', $results, $content_type, $view_mode);
   return $results;
+}
+
+/**
+ * Get URL patterns.
+ *
+ * @param string $content_type
+ *   Optional limit to a specific content type.
+ * @param string $view_mode
+ *   Optionally limit to a specific view_mode.
+ */
+function view_mode_page_get_patterns($content_type = NULL, $view_mode = NULL) {
+  return view_mode_page_get_entity_patterns(NULL, $content_type, $view_mode);
 }
 
 /**
@@ -347,6 +439,12 @@ function view_mode_page_view_mode_page_post_view($node, $view, $content_type, $v
  * Implements hook_view_mode_page_pattern_added().
  */
 function view_mode_page_view_mode_page_pattern_added($content_type, $view_mode, $pattern, $result) {
+}
+
+/**
+ * Implements hook_view_mode_page_entity_pattern_added().
+ */
+function view_mode_page_view_mode_page_entity_pattern_added($entity_type, $content_type, $view_mode, $pattern, $result) {
 }
 
 /**

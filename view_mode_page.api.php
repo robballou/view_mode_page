@@ -81,6 +81,25 @@ function hook_view_mode_page_pattern_added($content_type, $view_mode, $pattern, 
 }
 
 /**
+ * Hook called with a pattern is added via view_mode_page
+ *
+ * @param string $entity_type
+ *   The entity type the pattern was added for
+ * @param string $content_type
+ *   The content type for the pattern
+ * @param string $view_mode
+ *   The view mode for the pattern
+ * @param string $pattern
+ *   The URL pattern
+ * @param string $result
+ *   The DB result for the pattern addition
+ *
+ * @see view_mode_page_add_entity_pattern
+ */
+function hook_view_mode_page_entity_pattern_added($entity_type, $content_type, $view_mode, $pattern, $result) {
+}
+
+/**
  * Hook called when patterns are deleted
  *
  * @param string $content_type

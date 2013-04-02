@@ -74,7 +74,7 @@ function view_mode_page_update_7100() {
 function view_mode_page_update_7101() {
   $schema = view_mode_page_module_schema();
   db_add_field('view_mode_page', 'entity_type', $schema['view_mode_page']['fields']['entity_type']);
-  $update = db_update('view_mode_page')
+  $update = db_update('view_mode_page');
   $update
     ->fields(array(
     'entity_type' => 'node',

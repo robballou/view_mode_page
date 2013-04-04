@@ -102,6 +102,23 @@ function hook_view_mode_page_entity_pattern_added($entity_type, $content_type, $
 /**
  * Hook called when patterns are deleted
  *
+ * @param string $entity_type
+ *   The entity type passed to the delete pattern function
+ * @param string $content_type
+ *   The content type passed to the delete pattern function
+ * @param string $view_mode
+ *   The view mode passed to the delete pattern function
+ * @param string $pattern
+ *   The URL pattern passed to the delete pattern function
+ *
+ * @see view_mode_page_delete_patterns
+ */
+function hook_view_mode_page_entity_patterns_deleted($entity_type = NULL, $content_type = NULL, $view_mode = NULL, $pattern = NULL) {
+}
+
+/**
+ * Hook called when patterns are deleted
+ *
  * @param string $content_type
  *   The content type passed to the delete pattern function
  * @param string $view_mode

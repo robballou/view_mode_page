@@ -318,6 +318,8 @@ function view_mode_page_add_entity_pattern($settings) {
  * This does not necessarily effect the patterns saved in the menu_router
  * table. It only removes the patterns from the View Mode Page table.
  *
+ * @param string $entity_type
+ *   The name of the entity type that the pattern is used for.
  * @param string $content_type
  *   The name of the content type that the pattern is used for.
  * @param string $view_mode
@@ -325,8 +327,12 @@ function view_mode_page_add_entity_pattern($settings) {
  * @param string $pattern
  *   The URL pattern that is used in the hook_menu() call.
  */
-function view_mode_page_delete_patterns($content_type = NULL, $view_mode = NULL, $pattern = NULL) {
+function view_mode_page_delete_entity_patterns($entity_type = NULL, $content_type = NULL, $view_mode = NULL, $pattern = NULL) {
   $query = db_delete('view_mode_page');
+
+  if ($entity_type) {
+    $query->condition('entity_type', $entity_type, '=');
+  }
 
   if ($content_type) {
     $query->condition('content_type', $content_type, '=');
@@ -341,8 +347,29 @@ function view_mode_page_delete_patterns($content_type = NULL, $view_mode = NULL,
   }
 
   $result = $query->execute();
+  module_invoke_all('view_mode_page_entity_patterns_deleted', $entity_type, $content_type, $view_mode, $pattern);
   module_invoke_all('view_mode_page_patterns_deleted', $content_type, $view_mode, $pattern);
   return $result;
+}
+
+/**
+ * Delete URL patterns from the database.
+ *
+ * The query may be used with no arguments or with one or more arguments.
+ * Each argument increases the specificity of the delete process.
+ *
+ * This does not necessarily effect the patterns saved in the menu_router
+ * table. It only removes the patterns from the View Mode Page table.
+ *
+ * @param string $content_type
+ *   The name of the content type that the pattern is used for.
+ * @param string $view_mode
+ *   The name of the view mode.
+ * @param string $pattern
+ *   The URL pattern that is used in the hook_menu() call.
+ */
+function view_mode_page_delete_patterns($content_type = NULL, $view_mode = NULL, $pattern = NULL) {
+  return view_mode_page_delete_entity_patterns('node', $content_type, $view_mode, $pattern);
 }
 
 /**
@@ -411,6 +438,13 @@ function view_mode_page_get_entity_types() {
 }
 
 /**
+ * Implements hook_view_mode_page_get_entity_patterns().
+ */
+function view_mode_page_view_mode_page_get_entity_patterns($results, $entity_type, $content_type, $view_mode) {
+  return $results;
+}
+
+/**
  * Implements hook_view_mode_page_get_patterns().
  */
 function view_mode_page_view_mode_page_get_patterns($results, $content_type, $view_mode) {
@@ -445,6 +479,12 @@ function view_mode_page_view_mode_page_pattern_added($content_type, $view_mode, 
  * Implements hook_view_mode_page_entity_pattern_added().
  */
 function view_mode_page_view_mode_page_entity_pattern_added($entity_type, $content_type, $view_mode, $pattern, $result) {
+}
+
+/**
+ * Implements hook_view_mode_page_patterns_deleted().
+ */
+function view_mode_page_view_mode_page_entity_patterns_deleted($entity_type = NULL, $content_type = NULL, $view_mode = NULL, $pattern = NULL) {
 }
 
 /**

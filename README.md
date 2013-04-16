@@ -1,6 +1,7 @@
 # Introduction
 
-Create separate pages for different view modes for a given content type.
+This module helps create separate pages for different view modes for a given
+content type.
 
 On the manage display page for a given content type, you can assign patterns
 for view modes so that they will become a page at the given path. For
@@ -50,15 +51,26 @@ In this case, our View Mode Page pattern will need two wildcards:
 
     category/%/%/my-view-mode
 
+# Entity Support
+
+The VMP module now supports entities and not just nodes. To accomplish this, the node-based
+functions were left in the module for now but are *deprecated*. Please update to use the
+new entity based functions to ensure forward compatibility.
+
+Entity based functions now take an array as an argument with certain required settings. This
+should hopefully help in the future where new arguments need to be added. There are also new
+entity based hooks that should be used. The existing hooks will also still be used.
+
 # API
 
-Recent versions also include some API hooks:
+This module includes several API hooks that are helpful for modifying the VMP default
+functionality, including:
 
-- hook_view_mode_page_get_patterns
-- hook_view_mode_page_pre_view
-- hook_view_mode_page_post_view
-- hook_view_mode_page_pattern_added
-- hook_view_mode_page_patterns_deleted
+- hook_view_mode_page_get_entity_patterns
+- hook_view_mode_page_pre_entity_view
+- hook_view_mode_page_post_entity_view
+- hook_view_mode_page_entity_pattern_added
+- hook_view_mode_page_entity_patterns_deleted
 
 More information about the hooks can be found in the `view_mode_page.api.php` file.
 

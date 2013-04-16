@@ -139,19 +139,27 @@ function view_mode_page_menu_alter(&$items) {
 }
 
 /**
- * Render the node with the given view mode.
+ * Render the entity with the given view mode
  *
- * @param string $content_type
- *   The name of the content type that the pattern is used for.
- * @param string $view_mode
- *   The name of the view mode.
- * @param string $pattern
- *   The URL pattern that is used in the hook_menu() call.
+ * This function renders the entity with the given view mode. This is matched
+ * from the hook_menu item that is added for the pattern specified via the VMP
+ * in the admin.
+ *
+ * There are two hooks called from this function to allow developers to change
+ * or influence the output.
+ *
+ * @see hook_view_mode_page_pre_entity_view()
+ * @see hook_view_mode_page_post_entity_view()
  */
-function view_mode_page_change_view_mode($content_type, $view_mode, $pattern, $show_title = FALSE, $title = '') {
+function view_mode_page_change_entity_view_mode($settings) {
+  $settings = view_mode_page_assert_settings(
+    $settings,
+    array('content_type', 'url_pattern', 'view_mode'),
+    array('entity_type' => 'node', 'show_title' => FALSE, 'title' => '')
+  );
+
   // If the args are simply node/N we can get the node ID that way.
-  // @todo node specified
-  if (arg(0) == 'node' && is_numeric(arg(1))) {
+  if (arg(0) == $settings['entity_type'] && is_numeric(arg(1))) {
     $nid = arg(1);
   }
   else {
@@ -161,7 +169,7 @@ function view_mode_page_change_view_mode($content_type, $view_mode, $pattern, $s
     // To do this, we look at the url_pattern for our view_mode_page and find
     // what position the wildcard is in. based on this we can figure out what
     // section of the path is likely the url/alias for the node.
-    $pattern_array = explode('/', $pattern);
+    $pattern_array = explode('/', $settings['url_pattern']);
     $url_array = arg();
 
     // Find the wildcard position in the pattern.
@@ -182,29 +190,64 @@ function view_mode_page_change_view_mode($content_type, $view_mode, $pattern, $s
     $nid = array_pop($source_path_array);
   }
 
-  // @todo node specific
-  $node = node_load($nid);
-
+  // get the entity
+  $entity = entity_load($settings['entity_type'], array($nid));
+  if ($entity) {
+    // entity_load returns an array
+    $entity = array_pop($entity);
+  }
   // Check that we only use this on the specified content types.
-  if ($node->type != $content_type) {
+  if (($entity && $entity->type != $settings['content_type']) || !$entity) {
     return drupal_not_found();
   }
 
-  // @todo node specific
-  $node = module_invoke_all('view_mode_page_pre_view', $node, $content_type, $view_mode, $pattern);
-  $node = $node[0];
-  $view = node_view($node, $view_mode);
-  if ($show_title) {
-    if (!$title && isset($node->title)) {
-      $title = $node->title;
+  // call our pre_view hooks
+  $entity = module_invoke_all('view_mode_page_pre_view', $entity, $settings['content_type'], $settings['view_mode'], $settings['url_pattern']);
+  $entity = module_invoke_all('view_mode_page_pre_entity_view', $entity, $settings['entity_type'], $settings['content_type'], $settings['view_mode'], $settings['url_pattern']);
+
+  // create/render the entity
+  $entity = $entity[0];
+  $view = entity_view($settings['entity_type'], array($entity), $settings['view_mode']);
+  if ($settings['show_title']) {
+    if (!$settings['title'] && isset($entity->title)) {
+      $settings['title'] = $entity->title;
     }
-    // @todo node specific
-    $tokenData = array('node' => $node);
-    $title = token_replace($title, $tokenData);
-    drupal_set_title($title);
+    $tokenData = array($settings['entity_type'] => $entity);
+    $title = token_replace($settings['title'], $tokenData);
+    drupal_set_title($settings['title']);
   }
-  $view = module_invoke_all('view_mode_page_post_view', $node, $view, $content_type, $view_mode, $pattern);
+
+  // call the post_view hooks
+  $view = module_invoke_all('view_mode_page_post_view', $entity, $view, $settings['content_type'], $settings['view_mode'], $settings['url_pattern']);
+  $view = module_invoke_all('view_mode_page_post_entity_view', $entity, $view, $settings['entity_type'], $settings['content_type'], $settings['view_mode'], $settings['url_pattern']);
+
   return $view;
+}
+
+/**
+ * DEPRECATED: Render the node with the given view mode.
+ *
+ * Deprecated in favor of view_mode_page_change_entity_view_mode().
+ *
+ * @param string $content_type
+ *   The name of the content type that the pattern is used for.
+ * @param string $view_mode
+ *   The name of the view mode.
+ * @param string $pattern
+ *   The URL pattern that is used in the hook_menu() call.
+ *
+ * @deprecated
+ * @see view_mode_page_change_entity_view_mode
+ */
+function view_mode_page_change_view_mode($content_type, $view_mode, $pattern, $show_title = FALSE, $title = '') {
+  return view_mode_page_change_entity_view_mode(array(
+    'entity_type' => 'node',
+    'content_type' => $content_type,
+    'view_mode' => $view_mode,
+    'url_pattern' => $pattern,
+    'show_title' => $show_title,
+    'title' => $title,
+  ));
 }
 
 /**
@@ -233,7 +276,7 @@ function view_mode_page_assert_settings($settings, $required_fields, $defaults) 
 }
 
 /**
- * Deprecated: Add a URL pattern to the database.
+ * DEPRECATED: Add a URL pattern to the database.
  *
  * This does not add the pattern to the menu_router table, but only
  * adds it to the View Mode Page table.
@@ -251,6 +294,7 @@ function view_mode_page_assert_settings($settings, $required_fields, $defaults) 
  *   The URL pattern that is used in the hook_menu() call.
  *
  * @deprecated
+ * @see view_mode_page_add_entity_pattern
  */
 function view_mode_page_add_pattern($content_type, $view_mode, $pattern, $show_title = FALSE, $title = '') {
   return view_mode_page_add_entity_pattern(array(
@@ -353,7 +397,7 @@ function view_mode_page_delete_entity_patterns($entity_type = NULL, $content_typ
 }
 
 /**
- * Delete URL patterns from the database.
+ * DEPRECATED: Delete URL patterns from the database.
  *
  * The query may be used with no arguments or with one or more arguments.
  * Each argument increases the specificity of the delete process.
@@ -367,6 +411,9 @@ function view_mode_page_delete_entity_patterns($entity_type = NULL, $content_typ
  *   The name of the view mode.
  * @param string $pattern
  *   The URL pattern that is used in the hook_menu() call.
+ *
+ * @deprecated
+ * @see view_mode_page_delete_entity_patterns
  */
 function view_mode_page_delete_patterns($content_type = NULL, $view_mode = NULL, $pattern = NULL) {
   return view_mode_page_delete_entity_patterns('node', $content_type, $view_mode, $pattern);
@@ -403,12 +450,15 @@ function view_mode_page_get_entity_patterns($entity_type = NULL, $content_type =
 }
 
 /**
- * Get URL patterns.
+ * DEPRECATED: Get URL patterns.
  *
  * @param string $content_type
  *   Optional limit to a specific content type.
  * @param string $view_mode
  *   Optionally limit to a specific view_mode.
+ *
+ * @deprecated
+ * @see view_mode_page_get_entity_patterns
  */
 function view_mode_page_get_patterns($content_type = NULL, $view_mode = NULL) {
   return view_mode_page_get_entity_patterns(NULL, $content_type, $view_mode);
@@ -417,7 +467,7 @@ function view_mode_page_get_patterns($content_type = NULL, $view_mode = NULL) {
 /**
  * Returns all the entity types that exist for VMP
  *
- * @todo Add a hook to after retrieving from the DB
+ * @todo Add a hook to alter after retrieving from the DB
  *
  * @return array Array of entity types used by VMPs
  */
@@ -437,6 +487,10 @@ function view_mode_page_get_entity_types() {
   return $entity_types;
 }
 
+/*=====================================================================
+  IMPLEMENT OUR OWN HOOKS
+ ======================================================================*/
+
 /**
  * Implements hook_view_mode_page_get_entity_patterns().
  */
@@ -452,18 +506,28 @@ function view_mode_page_view_mode_page_get_patterns($results, $content_type, $vi
 }
 
 /**
+ * Implements hook_view_mode_page_pre_entity_view().
+ */
+function view_mode_page_view_mode_page_pre_entity_view($entity, $entity_type, $content_type, $view_mode, $pattern) {
+  return $entity;
+}
+
+/**
  * Implements hook_view_mode_page_pre_view().
- *
- * @todo references node
  */
 function view_mode_page_view_mode_page_pre_view($node, $content_type, $view_mode, $pattern) {
   return $node;
 }
 
 /**
+ * Implements hook_view_mode_page_post_entity_view().
+ */
+function view_mode_page_view_mode_page_post_entity_view($entity, $view, $entity_type, $content_type, $view_mode, $pattern) {
+  return $view;
+}
+
+/**
  * Implements hook_view_mode_page_post_view().
- *
- * @todo references node
  */
 function view_mode_page_view_mode_page_post_view($node, $view, $content_type, $view_mode, $pattern) {
   return $view;

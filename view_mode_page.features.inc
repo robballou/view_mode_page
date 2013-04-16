@@ -10,10 +10,10 @@
 function view_mode_page_pattern_features_export_options() {
   $options = array();
 
-  $patterns = module_invoke('view_mode_page', 'get_patterns');
+  $patterns = module_invoke('view_mode_page', 'get_entity_patterns');
   foreach ($patterns as $pattern) {
-    $name = $pattern->content_type . ':' . $pattern->view_mode;
-    $options[$name] = $pattern->content_type . ': ' . $pattern->view_mode;
+    $name = $pattern->entity_type . ':' . $pattern->content_type . ':' . $pattern->view_mode;
+    $options[$name] = $pattern->entity_type . ':' . $pattern->content_type . ': ' . $pattern->view_mode;
   }
 
   return $options;
@@ -43,8 +43,21 @@ function view_mode_page_pattern_features_export_render($module_name, $data, $exp
   $code[] = '  $vmp_config = array();';
   $code[] = '';
   foreach ($data as $sys_name) {
-    list($content_type, $view_mode) = explode(':', $sys_name);
-    $item = module_invoke('view_mode_page', 'get_patterns', $content_type, $view_mode);
+    $sys_name_pieces = explode(':', $sys_name);
+    switch (count($sys_name_pieces)) {
+      case 2:
+        $entity_type = 'node';
+        $content_type = $sys_name_pieces[0];
+        $view_mode = $sys_name_pieces[1];
+        break;
+
+      case 3:
+        $entity_type = $sys_name_pieces[0];
+        $content_type = $sys_name_pieces[1];
+        $view_mode = $sys_name_pieces[2];
+        break;
+    }
+    $item = module_invoke('view_mode_page', 'get_entity_patterns', $entity_type, $content_type, $view_mode);
     $code[] = '  $vmp_config[] = ' . features_var_export($item, '  ') . ';';
   }
   $code[] = '  return $vmp_config;';
@@ -60,6 +73,7 @@ function view_mode_page_pattern_features_rebuild($module) {
   foreach ($items as $item) {
     db_merge('view_mode_page')
       ->key(array(
+        'entity_type' => $item[0]['entity_type'],
         'content_type' => $item[0]['content_type'],
         'view_mode' => $item[0]['view_mode'],
         'url_pattern' => $item[0]['url_pattern'],

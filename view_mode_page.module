@@ -72,7 +72,7 @@ function view_mode_page_form_alter(&$form, $form_state, $form_id) {
   );
 
   // Get the value from the database and set it here.
-  $definitions = view_mode_page_get_patterns($form['#bundle'], $form['#view_mode']);
+  $definitions = view_mode_page_get_entity_patterns($form['#entity_type'], $form['#bundle'], $form['#view_mode']);
   if (isset($definitions[0])) {
     $form['additional_settings']['view_mode_page_settings']['view_mode_page_url_pattern']['#default_value'] = $definitions[0]->url_pattern;
     $form['additional_settings']['view_mode_page_settings']['view_mode_page_show_title']['#default_value'] = $definitions[0]->show_title;
@@ -91,14 +91,15 @@ function view_mode_page_form_submit($form, &$form_state) {
   $content_type = $form['#bundle'];
   $view_mode = $form['#view_mode'];
   if (isset($form_state['values']['additional_settings']['view_mode_page_settings']['view_mode_page_url_pattern'])) {
-    view_mode_page_delete_patterns($content_type, $view_mode);
-    view_mode_page_add_pattern(
-      $content_type,
-      $view_mode,
-      $form_state['values']['additional_settings']['view_mode_page_settings']['view_mode_page_url_pattern'],
-      $form_state['values']['additional_settings']['view_mode_page_settings']['view_mode_page_show_title'],
-      $form_state['values']['additional_settings']['view_mode_page_settings']['view_mode_page_title']
-    );
+    view_mode_page_delete_entity_patterns($form['#entity_type'], $content_type, $view_mode);
+    view_mode_page_add_entity_pattern(array(
+      'entity_type' => $form['#entity_type'],
+      'content_type' => $content_type,
+      'view_mode' => $view_mode,
+      'url_pattern' => $form_state['values']['additional_settings']['view_mode_page_settings']['view_mode_page_url_pattern'],
+      'show_title' => $form_state['values']['additional_settings']['view_mode_page_settings']['view_mode_page_show_title'],
+      'title' => $form_state['values']['additional_settings']['view_mode_page_settings']['view_mode_page_title'],
+    ));
     menu_rebuild();
   }
 }
@@ -107,9 +108,10 @@ function view_mode_page_form_submit($form, &$form_state) {
  * Implements hook_menu_alter().
  */
 function view_mode_page_menu_alter(&$items) {
-  $page_definitions = view_mode_page_get_patterns();
+  $page_definitions = view_mode_page_get_entity_patterns();
   foreach ($page_definitions as $page) {
     $pattern = $page->url_pattern;
+    $entity_type = $page->entity_type;
     $content_type = $page->content_type;
     $view_mode = $page->view_mode;
     $show_title = $page->show_title;
@@ -121,8 +123,9 @@ function view_mode_page_menu_alter(&$items) {
       $page = $items[$pattern];
     }
 
-    $page['page callback'] = 'view_mode_page_change_view_mode';
+    $page['page callback'] = 'view_mode_page_change_entity_view_mode';
     $page['page arguments'] = array(
+      $entity_type,
       $content_type,
       $view_mode,
       $pattern,
@@ -151,7 +154,26 @@ function view_mode_page_menu_alter(&$items) {
  * @see hook_view_mode_page_pre_entity_view()
  * @see hook_view_mode_page_post_entity_view()
  */
-function view_mode_page_change_entity_view_mode($settings) {
+function view_mode_page_change_entity_view_mode() {
+  // figure out the arguments
+  $args = func_get_args();
+  if (count($args) == 1) {
+    $settings = $args;
+  }
+  else {
+    $settings = array();
+    $setting_keys = array(
+      'entity_type',
+      'content_type',
+      'view_mode',
+      'url_pattern',
+    );
+
+    for ($i = 0; $i < count($args); $i++) {
+      $settings[$setting_keys[$i]] = $args[$i];
+    }
+  }
+
   $settings = view_mode_page_assert_settings(
     $settings,
     array('content_type', 'url_pattern', 'view_mode'),
@@ -261,6 +283,9 @@ function view_mode_page_change_view_mode($content_type, $view_mode, $pattern, $s
  *   Array of default values
  */
 function view_mode_page_assert_settings($settings, $required_fields, $defaults) {
+  if (!is_array($settings)) {
+    debug_print_backtrace();
+  }
   $params = array_replace($defaults, $settings);
   $errors = array();
   foreach ($required_fields as $key_name) {

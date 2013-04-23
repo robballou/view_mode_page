@@ -40,17 +40,22 @@ function view_mode_page_form_alter(&$form, $form_state, $form_id) {
       '#suffix' => '</div>',
       '#tree' => TRUE,
     );
-    $form['#attached']['js'][] = 'misc/form.js';
-    $form['#attached']['js'][] = 'misc/collapse.js';
+    // $form['#attached']['js'][] = 'misc/form.js';
+    // $form['#attached']['js'][] = 'misc/collapse.js';
+
+    if (isset($form['modes'])) {
+      $form['modes']['#group'] = 'additional_settings';
+      $form['modes']['#weight'] = -10;
+    }
   }
 
   // Add tab to the additional_settings.
   $form['additional_settings']['view_mode_page_settings'] = array(
-    '#type' => 'fieldset',
+    '#type' => 'details',
     '#title' => t('View mode pages'),
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
-    '#weight' => 10
+    '#weight' => 10,
   );
 
   $form['additional_settings']['view_mode_page_settings']['view_mode_page_url_pattern'] = array(
@@ -61,12 +66,12 @@ function view_mode_page_form_alter(&$form, $form_state, $form_id) {
   $form['additional_settings']['view_mode_page_settings']['view_mode_page_show_title'] = array(
     '#type' => 'checkbox',
     '#title' => t('Show title on the view mode page'),
-    '#description' => t('This option will show the title on the view mode page. By default, this will be the node title or the title provided below')
+    '#description' => t('This option will show the title on the view mode page. By default, this will be the node title or the title provided below'),
   );
   $form['additional_settings']['view_mode_page_settings']['view_mode_page_title'] = array(
     '#type' => 'textfield',
     '#title' => t('Title'),
-    '#description' => 'Specify an alternate title for the view mode page. You may include tokens as they relate to the node (e.g., <code>[node:title]</code>). <strong>The show title option must be on for this to show up!</strong>'
+    '#description' => 'Specify an alternate title for the view mode page. You may include tokens as they relate to the node (e.g., <code>[node:title]</code>). <strong>The show title option must be on for this to show up!</strong>',
   );
 
   // Get the value from the database and set it here.
@@ -97,7 +102,7 @@ function view_mode_page_form_submit($form, &$form_state) {
       $form_state['values']['additional_settings']['view_mode_page_settings']['view_mode_page_show_title'],
       $form_state['values']['additional_settings']['view_mode_page_settings']['view_mode_page_title']
     );
-    menu_rebuild();
+    menu_router_rebuild();
   }
 }
 
@@ -120,7 +125,13 @@ function view_mode_page_menu_alter(&$items) {
     }
 
     $page['page callback'] = 'view_mode_page_change_view_mode';
-    $page['page arguments'] = array($content_type, $view_mode, $pattern, $show_title, $title);
+    $page['page arguments'] = array(
+      $content_type,
+      $view_mode,
+      $pattern,
+      $show_title,
+      $title,
+    );
 
     if (!isset($page['access arguments'])) {
       $page['access arguments'] = array('access content');
@@ -163,7 +174,8 @@ function view_mode_page_change_view_mode($content_type, $view_mode, $pattern, $s
     $node_url = implode('/', array_slice($url_array, 0, $wildcard_position));
 
     // Look that up...
-    $source_path = drupal_lookup_path('source', $node_url);
+    // $source_path = drupal_lookup_path('source', $node_url);
+    $source_path = Drupal::service('path.alias_manager.cached')->getSystemPath($node_url);
     if (!$source_path) {
       return drupal_not_found();
     }
@@ -215,7 +227,7 @@ function view_mode_page_add_pattern($content_type, $view_mode, $pattern, $show_t
       'view_mode' => $view_mode,
       'url_pattern' => $pattern,
       'show_title' => intval($show_title),
-      'title' => $title
+      'title' => $title,
     ))->execute();
 
   module_invoke_all('view_mode_page_pattern_added', $content_type, $view_mode, $pattern, $result);

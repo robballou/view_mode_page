@@ -105,10 +105,25 @@ function view_mode_page_form_submit($form, &$form_state) {
 }
 
 /**
+ * Implements hook_menu().
+ */
+function view_mode_page_menu() {
+  $items = array();
+  // $items['admin/structure/view_mode_page/missing'] = array(
+  //   'title' => 'Missing view modes',
+  //   'page callback' => 'view_mode_page_missing_view_modes',
+  //   'access arguments' => array('access administration menu'),
+  // );
+  return $items;
+}
+
+/**
  * Implements hook_menu_alter().
  */
 function view_mode_page_menu_alter(&$items) {
   $page_definitions = view_mode_page_get_entity_patterns();
+  $view_modes = view_mode_page_get_view_modes();
+  // $missing_view_modes = array();
   foreach ($page_definitions as $page) {
     $pattern = $page->url_pattern;
     $entity_type = $page->entity_type;
@@ -116,6 +131,12 @@ function view_mode_page_menu_alter(&$items) {
     $view_mode = $page->view_mode;
     $show_title = $page->show_title;
     $title = $page->title;
+
+    // if this view mode is not in use, we shouldn't use it
+    // if (!in_array($view_mode, $view_modes) && $view_mode != 'default') {
+    //   $missing_view_modes[] = $page;
+    //   continue;
+    // }
 
     // Define or redefine our page.
     $page = array();
@@ -139,7 +160,41 @@ function view_mode_page_menu_alter(&$items) {
 
     $items[$pattern] = $page;
   }
+
+  // // set a variable for missing view modes
+  // if (count($missing_view_modes)) {
+  //   variable_set('view_mode_page_missing_view_modes', $missing_view_modes);
+  // }
 }
+
+// /**
+//  * Implements hook_requirements().
+//  *
+//  * Check that there are no missing view modes.
+//  */
+// function view_mode_page_requirements($phase) {
+//   if ($phase == 'runtime') {
+//     $missing = variable_get('view_mode_page_missing_view_modes', NULL);
+//     if ($missing) {
+//       $t = get_t();
+//       $modes = array();
+//       foreach ($missing as $missing_view_mode) {
+//         if (in_array($missing_view_mode->view_mode, $modes)) {
+//           continue;
+//         }
+//         $modes[] = $missing_view_mode->view_mode;
+//       }
+//       return array(
+//         array(
+//           'title' => $t('View Mode Page'),
+//           'description' => $t('View mode page has found patterns for view modes that are no longer in use. ') . l($t('Review missing view modes'), 'admin/structure/view_mode_page/missing'),
+//           'value' => implode(', ', $modes),
+//           'severity' => REQUIREMENT_WARNING,
+//         ),
+//       );
+//     }
+//   }
+// }
 
 /**
  * Render the entity with the given view mode
@@ -511,6 +566,51 @@ function view_mode_page_get_entity_types() {
   }
   return $entity_types;
 }
+
+/**
+ * Return the view modes in use by all entities
+ * @return array
+ *   List of view modes used by all the entities
+ */
+function view_mode_page_get_view_modes() {
+  $view_modes = &drupal_static(__FUNCTION__);
+  if (!isset($view_modes)) {
+    $entity_info = module_invoke_all('entity_info');
+    $view_modes = array();
+    foreach ($entity_info as $entity) {
+      if (isset($entity['view modes'])) {
+        foreach ($entity['view modes'] as $view_mode => $mode_details) {
+          if (!in_array($view_mode, $view_modes)) {
+            $view_modes[] = $view_mode;
+          }
+        }
+      }
+    }
+  }
+  return $view_modes;
+}
+
+// /**
+//  * Show missing view modes
+//  */
+// function view_mode_page_missing_view_modes() {
+//   $missing = variable_get('view_mode_page_missing_view_modes', NULL);
+
+//   if (!$missing) {
+//     drupal_set_message('There are no missing view modes currently');
+//     return;
+//   }
+
+//   $list = '<ul>';
+//   foreach ($missing as $view_mode_page_definition) {
+//     $list .= '<li>' . var_export($view_mode_page_definition, TRUE) . '</li>';
+//   }
+//   $list .= '</ul>';
+
+//   return array(
+//     '#markup' => $list,
+//   );
+// }
 
 /*=====================================================================
   IMPLEMENT OUR OWN HOOKS

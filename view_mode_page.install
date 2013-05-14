@@ -81,3 +81,10 @@ function view_mode_page_update_7101() {
     ))
     ->execute();
 }
+
+/**
+ * Implements hook_uninstall().
+ */
+function view_mode_page_uninstall() {
+  // variable_del('view_mode_page_missing_view_modes');
+}

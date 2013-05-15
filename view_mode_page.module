@@ -109,11 +109,18 @@ function view_mode_page_form_submit($form, &$form_state) {
  */
 function view_mode_page_menu() {
   $items = array();
-  // $items['admin/structure/view_mode_page/missing'] = array(
-  //   'title' => 'Missing view modes',
-  //   'page callback' => 'view_mode_page_missing_view_modes',
-  //   'access arguments' => array('access administration menu'),
-  // );
+  $items['admin/structure/view_mode_page/missing'] = array(
+    'title' => 'Missing view modes',
+    'page callback' => 'view_mode_page_missing_view_modes',
+    'access arguments' => array('access administration menu'),
+  );
+  $items['admin/structure/view_mode_page/remove/%'] = array(
+    'title' => 'Remove view mode page pattern',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('view_mode_page_remove_pattern', 1),
+    'access arguments' => array('access administration menu'),
+    'type' => MENU_NORMAL_ITEM,
+  );
   return $items;
 }
 
@@ -121,9 +128,16 @@ function view_mode_page_menu() {
  * Implements hook_menu_alter().
  */
 function view_mode_page_menu_alter(&$items) {
+  // get the VMP patterns
   $page_definitions = view_mode_page_get_entity_patterns();
-  $view_modes = view_mode_page_get_view_modes();
-  // $missing_view_modes = array();
+
+  // get the view modes in use
+  $view_modes = view_mode_page_get_entity_view_modes();
+
+  // hold mising view modes
+  $missing_view_modes = array();
+
+  // now add/alter menu items for each VMP page definition
   foreach ($page_definitions as $page) {
     $pattern = $page->url_pattern;
     $entity_type = $page->entity_type;
@@ -133,10 +147,10 @@ function view_mode_page_menu_alter(&$items) {
     $title = $page->title;
 
     // if this view mode is not in use, we shouldn't use it
-    // if (!in_array($view_mode, $view_modes) && $view_mode != 'default') {
-    //   $missing_view_modes[] = $page;
-    //   continue;
-    // }
+    if (!in_array($view_mode, $view_modes[$entity_type]) && $view_mode != 'default') {
+      $missing_view_modes[] = $page;
+      continue;
+    }
 
     // Define or redefine our page.
     $page = array();
@@ -161,40 +175,40 @@ function view_mode_page_menu_alter(&$items) {
     $items[$pattern] = $page;
   }
 
-  // // set a variable for missing view modes
-  // if (count($missing_view_modes)) {
-  //   variable_set('view_mode_page_missing_view_modes', $missing_view_modes);
-  // }
+  // set a variable for missing view modes
+  if (count($missing_view_modes)) {
+    variable_set('view_mode_page_missing_view_modes', $missing_view_modes);
+  }
 }
 
-// /**
-//  * Implements hook_requirements().
-//  *
-//  * Check that there are no missing view modes.
-//  */
-// function view_mode_page_requirements($phase) {
-//   if ($phase == 'runtime') {
-//     $missing = variable_get('view_mode_page_missing_view_modes', NULL);
-//     if ($missing) {
-//       $t = get_t();
-//       $modes = array();
-//       foreach ($missing as $missing_view_mode) {
-//         if (in_array($missing_view_mode->view_mode, $modes)) {
-//           continue;
-//         }
-//         $modes[] = $missing_view_mode->view_mode;
-//       }
-//       return array(
-//         array(
-//           'title' => $t('View Mode Page'),
-//           'description' => $t('View mode page has found patterns for view modes that are no longer in use. ') . l($t('Review missing view modes'), 'admin/structure/view_mode_page/missing'),
-//           'value' => implode(', ', $modes),
-//           'severity' => REQUIREMENT_WARNING,
-//         ),
-//       );
-//     }
-//   }
-// }
+/**
+ * Implements hook_requirements().
+ *
+ * Check that there are no missing view modes.
+ */
+function view_mode_page_requirements($phase) {
+  if ($phase == 'runtime') {
+    $missing = variable_get('view_mode_page_missing_view_modes', NULL);
+    if ($missing) {
+      $t = get_t();
+      $modes = array();
+      foreach ($missing as $missing_view_mode) {
+        if (in_array($missing_view_mode->view_mode, $modes)) {
+          continue;
+        }
+        $modes[] = $missing_view_mode->view_mode;
+      }
+      return array(
+        array(
+          'title' => $t('View Mode Page'),
+          'description' => $t('View mode page has found patterns for view modes that are no longer in use. ') . l($t('Review missing view modes'), 'admin/structure/view_mode_page/missing'),
+          'value' => implode(', ', $modes),
+          'severity' => REQUIREMENT_WARNING,
+        ),
+      );
+    }
+  }
+}
 
 /**
  * Render the entity with the given view mode
@@ -568,6 +582,28 @@ function view_mode_page_get_entity_types() {
 }
 
 /**
+ * Return the view modes used by each entity
+ */
+function view_mode_page_get_entity_view_modes() {
+  $view_modes = &drupal_static(__FUNCTION__);
+  if (!isset($view_modes)) {
+    $entity_info = module_invoke_all('entity_info');
+    $view_modes = array();
+    foreach ($entity_info as $entity_name => $entity) {
+      if (isset($entity['view modes'])) {
+        $view_modes[$entity_name] = array();
+        foreach ($entity['view modes'] as $view_mode => $mode_details) {
+          if (!in_array($view_mode, $view_modes[$entity_name])) {
+            $view_modes[$entity_name][] = $view_mode;
+          }
+        }
+      }
+    }
+  }
+  return $view_modes;
+}
+
+/**
  * Return the view modes in use by all entities
  * @return array
  *   List of view modes used by all the entities
@@ -590,27 +626,134 @@ function view_mode_page_get_view_modes() {
   return $view_modes;
 }
 
-// /**
-//  * Show missing view modes
-//  */
-// function view_mode_page_missing_view_modes() {
-//   $missing = variable_get('view_mode_page_missing_view_modes', NULL);
+/**
+ * Show missing view modes
+ */
+function view_mode_page_missing_view_modes() {
+  $missing = variable_get('view_mode_page_missing_view_modes', NULL);
 
-//   if (!$missing) {
-//     drupal_set_message('There are no missing view modes currently');
-//     return;
-//   }
+  // if nothing is missing, let's exit with a nice message
+  if (!$missing) {
+    return array('#markup' => '<p>' . t('There are currently no view mode page patterns with missing view modes.') . '</p>');
+  }
 
-//   $list = '<ul>';
-//   foreach ($missing as $view_mode_page_definition) {
-//     $list .= '<li>' . var_export($view_mode_page_definition, TRUE) . '</li>';
-//   }
-//   $list .= '</ul>';
+  $patterns_text = 'patterns are';
+  if (count($missing) == 1) {
+    $patterns_text = 'pattern is';
+  }
 
-//   return array(
-//     '#markup' => $list,
-//   );
-// }
+  $page = array();
+  $page['directions'] = array(
+    '#markup' => '<p>' . t('The following view mode page @patterns missing a view mode. The view mode may have been removed.', array('@patterns' => $patterns_text)) . '</p>',
+  );
+
+  $page['view_modes'] = array('#markup' => view_mode_page_list_patterns($missing));
+  return $page;
+}
+
+/**
+ * Return a list of patterns
+ *
+ * @param array $patterns
+ *   Array of the patterns to show
+ */
+function view_mode_page_list_patterns($patterns) {
+  $headers = array('Entity', 'Bundle', 'View mode', 'Pattern', '');
+  $rows = array();
+
+  foreach ($patterns as $pattern) {
+    $pattern_hash = view_mode_page_pattern_hash($pattern);
+    $rows[] = array(
+      $pattern->entity_type,
+      $pattern->content_type,
+      $pattern->view_mode,
+      $pattern->url_pattern,
+      l(t('Remove pattern'), 'admin/structure/view_mode_page/remove/' . $pattern_hash),
+    );
+  }
+
+  return theme('table', array(
+    'header' => $headers,
+    'rows' => $rows,
+    'attributes' => array(),
+    'caption' => '',
+    'colgroups' => array(),
+    'sticky' => FALSE,
+    'empty' => '',
+  ));
+}
+
+/**
+ * Form for removing the pattern
+ */
+function view_mode_page_remove_pattern($form, &$form_state) {
+  $hash = arg(4);
+
+  // find the pattern matching the hash
+  $patterns = view_mode_page_get_entity_patterns();
+  $found = FALSE;
+  foreach ($patterns as $pattern) {
+    if (view_mode_page_pattern_hash($pattern) == $hash) {
+      $found = TRUE;
+      break;
+    }
+  }
+
+  if (!$found) {
+    drupal_not_found();
+    exit;
+  }
+
+  return array(
+    'confirm' => array('#markup' => '<p>' . t('Do you really want to remove this pattern?') . '</p>'),
+    'confirm_button' => array(
+      '#type' => 'submit',
+      '#value' => 'Remove',
+    ),
+    'pattern' => array(
+      '#type' => 'hidden',
+      '#value' => drupal_json_encode($pattern),
+    ),
+  );
+}
+
+/**
+ * Submit handler for the remove pattern form
+ */
+function view_mode_page_remove_pattern_submit($form, &$form_state) {
+  $hash = arg(4);
+  $pattern = (object) drupal_json_decode($form_state['values']['pattern']);
+  if (view_mode_page_pattern_hash($pattern) == $hash) {
+    view_mode_page_delete_entity_patterns(
+      $pattern->entity_type,
+      $pattern->content_type,
+      $pattern->view_mode,
+      $pattern->url_pattern
+    );
+    global $user;
+    drupal_set_message(t('View Mode Page pattern removed'));
+    watchdog('view_mode_page', 'Pattern removed: ' . drupal_json_encode($pattern) . ' by uid ' . $user->uid);
+    drupal_goto('admin/structure');
+  }
+}
+
+/**
+ * Calculate the hash of this pattern
+ *
+ * @param object $pattern
+ *   Object of the pattern information
+ *
+ * @return string
+ *   The pattern hash
+ */
+function view_mode_page_pattern_hash($pattern) {
+  return sha1(
+    $pattern->entity_type .
+    $pattern->content_type .
+    $pattern->view_mode .
+    $pattern->url_pattern
+  );
+}
 
 /*=====================================================================
   IMPLEMENT OUR OWN HOOKS

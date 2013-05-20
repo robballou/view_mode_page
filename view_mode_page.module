@@ -236,9 +236,16 @@ function view_mode_page_change_entity_view_mode() {
       'content_type',
       'view_mode',
       'url_pattern',
+      'show_title',
+      'title',
     );
 
+    if (count($args) > count($setting_keys)) {
+      watchdog('view_mode_page', 'There are more arguments to view_mode_page_change_entity_view_mode than there should be: ' . var_export($args, TRUE), WATCHDOG_ERROR);
+    }
+
     for ($i = 0; $i < count($args); $i++) {
+      if (!isset($setting_keys[$i])) { continue; }
       $settings[$setting_keys[$i]] = $args[$i];
     }
   }

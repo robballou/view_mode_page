@@ -1,6 +1,19 @@
 <?php
 
 /**
+ * Hook called when getting the list of entity types this is enabled for
+ *
+ * @param array $types
+ *   Array of entity types
+ *
+ * @return array
+ *   Array of entity types
+ */
+function hook_view_mode_page_get_entity_types($types) {
+  return $types;
+}
+
+/**
  * Hook called when the results of the get_patterns call is made.
  *
  * This could be used to inject/change results before they are returned.

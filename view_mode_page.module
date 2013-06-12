@@ -24,7 +24,6 @@ function view_mode_page_features_api() {
  * Add the tab to additional settings.
  */
 function view_mode_page_form_alter(&$form, $form_state, $form_id) {
-  // @todo node entity type specified
   $is_view_mode_page = isset($form['#entity_type']) && in_array($form['#entity_type'], view_mode_page_get_entity_types());
   $is_display_overview = isset($form['#id']) && $form['#id'] == 'field-ui-display-overview-form';
   if (!$is_view_mode_page || ($is_view_mode_page && !$is_display_overview)) {
@@ -575,15 +574,9 @@ function view_mode_page_get_patterns($content_type = NULL, $view_mode = NULL) {
 function view_mode_page_get_entity_types() {
   $entity_types = &drupal_static(__FUNCTION__);
   if (!isset($entity_types)) {
-    $entity_types = array();
-    $select = db_select('view_mode_page', 'vmp');
-    $select->fields('vmp', array('entity_type'));
-    $select->orderBy('entity_type')
-      ->distinct();
-    $results = $select->execute();
-    while (($result = $results->fetchAssoc())) {
-      $entity_types[] = $result['entity_type'];
-    }
+    $all_entity_types = entity_get_info();
+    $entity_types = array_keys($all_entity_types);
+    $entity_types = module_invoke_all('view_mode_page_get_entity_types', $entity_types);
   }
   return $entity_types;
 }
@@ -765,6 +758,13 @@ function view_mode_page_pattern_hash($pattern) {
 /*=====================================================================
   IMPLEMENT OUR OWN HOOKS
  ======================================================================*/
+
+/**
+ * Implements hook_get_entity_types().
+ */
+function view_mode_page_view_mode_page_get_entity_types($types) {
+  return $types;
+}
 
 /**
  * Implements hook_view_mode_page_get_entity_patterns().

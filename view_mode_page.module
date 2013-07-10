@@ -311,7 +311,7 @@ function view_mode_page_change_entity_view_mode() {
     }
     $tokenData = array($settings['entity_type'] => $entity);
     $title = token_replace($settings['title'], $tokenData);
-    drupal_set_title($settings['title']);
+    drupal_set_title($title);
   }
 
   // call the post_view hooks

@@ -607,23 +607,10 @@ function view_mode_page_get_entity_view_modes() {
  * Return the view modes in use by all entities
  * @return array
  *   List of view modes used by all the entities
+ * @deprecated
  */
 function view_mode_page_get_view_modes() {
-  $view_modes = &drupal_static(__FUNCTION__);
-  if (!isset($view_modes)) {
-    $entity_info = module_invoke_all('entity_info');
-    $view_modes = array();
-    foreach ($entity_info as $entity) {
-      if (isset($entity['view modes'])) {
-        foreach ($entity['view modes'] as $view_mode => $mode_details) {
-          if (!in_array($view_mode, $view_modes)) {
-            $view_modes[] = $view_mode;
-          }
-        }
-      }
-    }
-  }
-  return $view_modes;
+  return view_mode_page_get_entity_view_modes();
 }
 
 /**

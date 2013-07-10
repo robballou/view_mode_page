@@ -3,4 +3,6 @@ description = Associate a URL pattern with a specific view mode for a node
 package = Other
 core = 7.x
 
+dependencies[] = entity
+
 files[] = view_mode_page.test

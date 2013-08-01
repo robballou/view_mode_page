@@ -310,7 +310,7 @@ function view_mode_page_change_entity_view_mode() {
       $settings['title'] = $entity->title;
     }
     $tokenData = array($settings['entity_type'] => $entity);
-    $title = token_replace($settings['title'], $tokenData);
+    $title = token_replace($settings['title'], $tokenData, array('sanitize' => FALSE));
     drupal_set_title($title);
   }
 

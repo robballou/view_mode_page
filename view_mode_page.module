@@ -25,7 +25,7 @@ function view_mode_page_features_api() {
  */
 function view_mode_page_form_alter(&$form, $form_state, $form_id) {
   $is_view_mode_page = isset($form['#entity_type']) && in_array($form['#entity_type'], view_mode_page_get_entity_types());
-  $is_display_overview = isset($form['#id']) && $form['#id'] == 'field-ui-display-overview-form';
+  $is_display_overview = isset($form['#id']) && preg_match('/^field-ui-display-overview-form/', $form['#id']);;
   if (!$is_view_mode_page || ($is_view_mode_page && !$is_display_overview)) {
     return;
   }

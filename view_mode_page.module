@@ -293,9 +293,15 @@ function view_mode_page_change_entity_view_mode() {
     // entity_load returns an array
     $entity = array_pop($entity);
   }
+
   // Check that we only use this on the specified content types.
   if (($entity && $entity->type != $settings['content_type']) || !$entity) {
     return drupal_not_found();
+  }
+
+  // Check that the user can access this entity
+  if (!entity_access('view', $settings['entity_type'], $entity)) {
+    return drupal_access_denied();
   }
 
   // call our pre_view hooks

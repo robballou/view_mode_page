@@ -181,6 +181,11 @@ function view_mode_page_change_view_mode($content_type, $view_mode, $pattern, $s
     return drupal_not_found();
   }
 
+  // Check if they have access to this node
+  if (!node_access('view', $node)) {
+    return drupal_access_denied();
+  }
+
   $node = module_invoke_all('view_mode_page_pre_view', $node, $content_type, $view_mode, $pattern);
   $node = $node[0];
   $view = node_view($node, $view_mode);

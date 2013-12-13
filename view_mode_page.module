@@ -287,6 +287,14 @@ function view_mode_page_change_entity_view_mode() {
     $nid = array_pop($source_path_array);
   }
 
+  // get the local tasks for the entity path by temporarily setting the
+  // $_GET['q'] to the entity path, running menu_local_tasks(), and then
+  // restoring
+  $q = $_GET['q'];
+  $_GET['q'] = $settings['entity_type'] . '/' . $nid;
+  menu_local_tasks();
+  $_GET['q'] = $q;
+
   // get the entity
   $entity = entity_load($settings['entity_type'], array($nid));
   if ($entity) {

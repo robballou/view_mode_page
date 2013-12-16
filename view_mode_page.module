@@ -244,7 +244,9 @@ function view_mode_page_change_entity_view_mode() {
     }
 
     for ($i = 0; $i < count($args); $i++) {
-      if (!isset($setting_keys[$i])) { continue; }
+      if (!isset($setting_keys[$i])) {
+        continue;
+      }
       $settings[$setting_keys[$i]] = $args[$i];
     }
   }
@@ -323,8 +325,8 @@ function view_mode_page_change_entity_view_mode() {
     if (!$settings['title'] && isset($entity->title)) {
       $settings['title'] = $entity->title;
     }
-    $tokenData = array($settings['entity_type'] => $entity);
-    $title = token_replace($settings['title'], $tokenData, array('sanitize' => FALSE));
+    $token_data = array($settings['entity_type'] => $entity);
+    $title = token_replace($settings['title'], $token_data, array('sanitize' => FALSE));
     drupal_set_title($title);
   }
 
@@ -583,7 +585,8 @@ function view_mode_page_get_patterns($content_type = NULL, $view_mode = NULL) {
  *
  * @todo Add a hook to alter after retrieving from the DB
  *
- * @return array Array of entity types used by VMPs
+ * @return array
+ *   Array of entity types used by VMPs
  */
 function view_mode_page_get_entity_types() {
   $entity_types = &drupal_static(__FUNCTION__);

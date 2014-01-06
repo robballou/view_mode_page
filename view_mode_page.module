@@ -30,6 +30,11 @@ function view_mode_page_form_alter(&$form, $form_state, $form_id) {
     return;
   }
 
+  // check permissions
+  if (!user_access('administer view mode page')) {
+    return;
+  }
+
   // Add additional settings vertical tab, if it does not currently exist.
   // This code was borrowed from display suite
   if (!isset($form['additional_settings'])) {
@@ -87,6 +92,11 @@ function view_mode_page_form_alter(&$form, $form_state, $form_id) {
  * Form submit handler for saving view mode page patterns.
  */
 function view_mode_page_form_submit($form, &$form_state) {
+  // check permissions
+  if (!user_access('administer view mode page')) {
+    return;
+  }
+
   $content_type = $form['#bundle'];
   $view_mode = $form['#view_mode'];
   if (isset($form_state['values']['additional_settings']['view_mode_page_settings']['view_mode_page_url_pattern'])) {
@@ -111,13 +121,13 @@ function view_mode_page_menu() {
   $items['admin/structure/view_mode_page/missing'] = array(
     'title' => 'Missing view modes',
     'page callback' => 'view_mode_page_missing_view_modes',
-    'access arguments' => array('access administration menu'),
+    'access arguments' => array('administer view mode page'),
   );
   $items['admin/structure/view_mode_page/remove/%'] = array(
     'title' => 'Remove view mode page pattern',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('view_mode_page_remove_pattern', 1),
-    'access arguments' => array('access administration menu'),
+    'access arguments' => array('administer view mode page'),
     'type' => MENU_NORMAL_ITEM,
   );
   return $items;
@@ -756,6 +766,18 @@ function view_mode_page_pattern_hash($pattern) {
     $pattern->content_type .
     $pattern->view_mode .
     $pattern->url_pattern
+  );
+}
+
+/**
+ * Implements hook_permission().
+ */
+function view_mode_page_permission() {
+  return array(
+    'administer view mode page' => array(
+      'title' => t('Administer View Mode Page'),
+      'description' => t('Allow user to update view mode page patterns on content types'),
+    ),
   );
 }
 

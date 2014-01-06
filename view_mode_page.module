@@ -593,8 +593,6 @@ function view_mode_page_get_patterns($content_type = NULL, $view_mode = NULL) {
 /**
  * Returns all the entity types that exist for VMP
  *
- * @todo Add a hook to alter after retrieving from the DB
- *
  * @return array
  *   Array of entity types used by VMPs
  */

@@ -4,6 +4,8 @@
  * View Mode Page module allows users to add a page for a specific view mode.
  */
 
+define('VIEW_MODE_PAGE_ADMINISTER', 'administer view mode page');
+
 /**
  * Implements hook_features_api().
  */
@@ -30,8 +32,7 @@ function view_mode_page_form_alter(&$form, $form_state, $form_id) {
     return;
   }
 
-  // check permissions
-  if (!user_access('administer view mode page')) {
+  if (!view_mode_page_has_manage_access($form)) {
     return;
   }
 
@@ -93,7 +94,7 @@ function view_mode_page_form_alter(&$form, $form_state, $form_id) {
  */
 function view_mode_page_form_submit($form, &$form_state) {
   // check permissions
-  if (!user_access('administer view mode page')) {
+  if (!view_mode_page_has_manage_access($form)) {
     return;
   }
 
@@ -639,6 +640,23 @@ function view_mode_page_get_view_modes() {
 }
 
 /**
+ * Check if this user has permission to manage this entity
+ */
+function view_mode_page_has_manage_access($form) {
+  // check permissions
+  $has_full_access = user_access(VIEW_MODE_PAGE_ADMINISTER);
+  $has_entity_access = user_access('manage VMP patterns for entity ' . $form['#entity_type']);
+  $has_view_mode_access = user_access('manage VMP patterns for view mode ' . $form['#entity_type'] . ':' . $form['#view_mode']);
+
+  $access_allowed = FALSE;
+  if ($has_full_access || $has_entity_access || $has_view_mode_access) {
+    $access_allowed = TRUE;
+  }
+
+  return $access_allowed;
+}
+
+/**
  * Show missing view modes
  */
 function view_mode_page_missing_view_modes() {
@@ -771,12 +789,36 @@ function view_mode_page_pattern_hash($pattern) {
  * Implements hook_permission().
  */
 function view_mode_page_permission() {
-  return array(
-    'administer view mode page' => array(
+  $permissions = array(
+    VIEW_MODE_PAGE_ADMINISTER => array(
       'title' => t('Administer View Mode Page'),
       'description' => t('Allow user to update view mode page patterns on content types'),
     ),
   );
+
+  $entities = view_mode_page_get_entity_types();
+  foreach ($entities as $entity_type) {
+    $permissions["manage VMP patterns for entity $entity_type"] = array(
+      'title' => t('Manage patterns for %type', array('%type' => $entity_type)),
+      'description' => t('Allow user to update view mode page patterns for the entity %type', array('%type' => $entity_type)),
+    );
+  }
+
+  $view_modes = view_mode_page_get_entity_view_modes();
+  foreach ($view_modes as $entity_type => $entity_view_modes) {
+    foreach ($entity_view_modes as $view_mode) {
+      $info = array(
+        '%entity_type' => $entity_type,
+        '%type' => $view_mode,
+      );
+      $permissions["manage VMP patterns for view mode {$entity_type}:{$view_mode}"] = array(
+        'title' => t('Manage patterns for the view mode %entity_type:%type', $info),
+        'description' => t('Allow user to update view mode page patterns for the view mode %type', $info),
+      );
+    }
+  }
+
+  return $permissions;
 }
 
 /*=====================================================================

@@ -78,6 +78,14 @@ function view_mode_page_pattern_features_rebuild($module) {
         'view_mode' => $item[0]['view_mode'],
         'url_pattern' => $item[0]['url_pattern'],
       ))
+      ->fields(array(
+        'entity_type' => $item[0]['entity_type'],
+        'content_type' => $item[0]['content_type'],
+        'view_mode' => $item[0]['view_mode'],
+        'url_pattern' => $item[0]['url_pattern'],
+        'title' => $item[0]['title'],
+        'show_title' => $item[0]['show_title'],
+      ))
       ->execute();
   }
   menu_rebuild();

@@ -56,6 +56,8 @@ class ViewModePageTestCase extends DrupalWebTestCase {
     $this->assertEntityPattern('node', $content_type, $view_mode, $url_pattern, $show_title, $title);
   }
 
+  // TESTS
+
   /**
    * Test adding a pattern with the entity based function
    */
@@ -145,5 +147,38 @@ class ViewModePageTestCase extends DrupalWebTestCase {
     // delete the pattern
     view_mode_page_delete_entity_patterns('node', 'blog_post');
     $this->assertNumberOfPatterns(1);
+  }
+
+  /**
+   * Test VMP perms
+   */
+  public function testNoAccessWithoutPermissions() {
+    $user = $this->drupalCreateUser(array(
+      'administer nodes',
+      'administer content types',
+    ));
+
+    $this->drupalLogin($user);
+
+    $this->drupalGet('admin/structure/types/manage/article/display');
+    $this->assertResponse(200, 'User is allowed to access the manage display page');
+    $this->assertNoFieldByName('additional_settings[view_mode_page_settings][view_mode_page_url_pattern]');
+  }
+
+  /**
+   * Test VMP perms
+   */
+  public function testAccessWithPermissions() {
+    $user = $this->drupalCreateUser(array(
+      'administer nodes',
+      'administer content types',
+      'administer view mode page',
+    ));
+
+    $this->drupalLogin($user);
+
+    $this->drupalGet('admin/structure/types/manage/article/display');
+    $this->assertResponse(200, 'User is allowed to access the manage display page');
+    $this->assertFieldByName('additional_settings[view_mode_page_settings][view_mode_page_url_pattern]');
   }
 }

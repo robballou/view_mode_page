@@ -85,6 +85,7 @@ function view_mode_page_form_alter(&$form, $form_state, $form_id) {
   }
 
   $form['#submit'][] = 'view_mode_page_form_submit';
+  $form['#validate'][] = 'view_mode_page_form_validate';
 }
 
 /**
@@ -111,6 +112,18 @@ function view_mode_page_form_submit($form, &$form_state) {
       'title' => $form_state['values']['additional_settings']['view_mode_page_settings']['view_mode_page_title'],
     ));
     menu_rebuild();
+  }
+}
+
+/**
+ * Validation handler for the pattern submit
+ */
+function view_mode_page_form_validate($form, &$form_state) {
+  $pattern = $form_state['values']['additional_settings']['view_mode_page_settings']['view_mode_page_url_pattern'];
+
+  // the pattern cannot start with '%'
+  if (preg_match('/^%/', $pattern)) {
+    form_set_error('view_mode_page_url_pattern', t('Patterns should not start with a wildcard (%)'));
   }
 }
 

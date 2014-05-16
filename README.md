@@ -51,6 +51,10 @@ In this case, our View Mode Page pattern will need two wildcards:
 
     category/%/%/my-view-mode
 
+**NOTE:** You cannot use a pattern like `%/my-view-mode` as Drupal does not support menu
+items with a wildcard in the first position. This is true for any menu items, not just
+VMP.
+
 # Entity Support
 
 The VMP module now supports entities and not just nodes. To accomplish this, the node-based

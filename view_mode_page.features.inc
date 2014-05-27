@@ -58,6 +58,7 @@ function view_mode_page_pattern_features_export_render($module_name, $data, $exp
         break;
     }
     $item = module_invoke('view_mode_page', 'get_entity_patterns', $entity_type, $content_type, $view_mode);
+    ksort($item);
     $code[] = '  $vmp_config[] = ' . features_var_export($item, '  ') . ';';
   }
   $code[] = '  return $vmp_config;';

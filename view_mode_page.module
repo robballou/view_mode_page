@@ -329,8 +329,13 @@ function view_mode_page_change_entity_view_mode() {
   }
 
   // Check that we only use this on the specified content types.
-  if (($entity && $entity->type != $settings['content_type']) || !$entity) {
-    return drupal_not_found();
+  if ($entity) {
+    if (isset($entity->type) && $entity->type != $settings['content_type']) {
+      return drupal_not_found();
+    }
+    elseif (isset($entity->vocabulary_machine_name) && $entity->vocabulary_machine_name != $settings['content_type']) {
+      return drupal_not_found();
+    }
   }
 
   // Check that the user can access this entity

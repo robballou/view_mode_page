@@ -202,6 +202,10 @@ function view_mode_page_menu_alter(&$items) {
   if (count($missing_view_modes)) {
     variable_set('view_mode_page_missing_view_modes', $missing_view_modes);
   }
+  // remove the variable if there are no missing view modes
+  else {
+    variable_del('view_mode_page_missing_view_modes');
+  }
 }
 
 /**

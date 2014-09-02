@@ -181,4 +181,38 @@ class ViewModePageTestCase extends DrupalWebTestCase {
     $this->assertResponse(200, 'User is allowed to access the manage display page');
     $this->assertFieldByName('additional_settings[view_mode_page_settings][view_mode_page_url_pattern]');
   }
+
+  /**
+   * Test array_replace wrapper
+   */
+  public function testArrayReplaceWithNoValues() {
+    $defaults = array(
+      'setting' => 123,
+      'setting2' => 'test',
+    );
+    $array = array();
+
+    $merged = view_mode_page_array_replace($defaults, $array);
+    $this->assertTrue(isset($merged['setting'], $merged['setting2']));
+    $this->assertEqual($merged['setting'], 123);
+    $this->assertEqual($merged['setting2'], 'test');
+  }
+
+  /**
+   * Test array_replace wrapper
+   */
+  public function testArrayReplaceWithOverrides() {
+    $defaults = array(
+      'setting' => 123,
+      'setting2' => 'test',
+    );
+    $array = array(
+      'setting' => 456,
+    );
+
+    $merged = view_mode_page_array_replace($defaults, $array);
+    $this->assertTrue(isset($merged['setting'], $merged['setting2']));
+    $this->assertEqual($merged['setting'], 456);
+    $this->assertEqual($merged['setting2'], 'test');
+  }
 }

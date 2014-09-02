@@ -410,7 +410,7 @@ function view_mode_page_assert_settings($settings, $required_fields, $defaults) 
   if (!is_array($settings)) {
     debug_print_backtrace();
   }
-  $params = array_replace($defaults, $settings);
+  $params = view_mode_page_array_replace($defaults, $settings);
   $errors = array();
   foreach ($required_fields as $key_name) {
     if (!isset($params[$key_name])) {
@@ -422,6 +422,24 @@ function view_mode_page_assert_settings($settings, $required_fields, $defaults) 
     throw new Exception($message);
   }
   return $params;
+}
+
+/**
+ * A wrapper around PHP's array_replace function
+ *
+ * This also fills in a custom function in case this is used with PHP 5.2.
+ */
+function view_mode_page_array_replace($defaults, $settings) {
+  if (function_exists('array_replace')) {
+    return array_replace($defaults, $settings);
+  }
+
+  // php 5.2 behavior
+  $array = $defaults;
+  foreach ($settings as $key => $value) {
+    $array[$key] = $value;
+  }
+  return $array;
 }
 
 /**

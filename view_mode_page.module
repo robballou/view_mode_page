@@ -169,8 +169,15 @@ function view_mode_page_menu_alter(&$items) {
     $show_title = $page->show_title;
     $title = $page->title;
 
+    // if there are no view modes for the entity type and something besides
+    // default is requested, we should just skip
+    if (!isset($view_modes[$entity_type]) && $view_mode != 'default') {
+      $missing_view_modes[] = $page;
+      continue;
+    }
+
     // if this view mode is not in use, we shouldn't use it
-    if (!in_array($view_mode, $view_modes[$entity_type]) && $view_mode != 'default') {
+    if (isset($view_modes[$entity_type]) && !in_array($view_mode, $view_modes[$entity_type]) && $view_mode != 'default') {
       $missing_view_modes[] = $page;
       continue;
     }

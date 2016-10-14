@@ -46,7 +46,7 @@ function view_mode_page_module_schema() {
         'default' => '',
       ),
     ),
-    'primary key' => array('content_type', 'view_mode', 'url_pattern'),
+    'primary key' => array('content_type', 'entity_type', 'view_mode', 'url_pattern'),
     'index' => array('entity_type' => array('entity_type')),
   );
   return $schema;
@@ -80,6 +80,15 @@ function view_mode_page_update_7101() {
     'entity_type' => 'node',
     ))
     ->execute();
+}
+
+/**
+ * Add entity_type field to the primary key
+ */
+function view_mode_page_update_7102() {
+  $schema = view_mode_page_module_schema();
+  db_drop_primary_key('view_mode_page');
+  db_add_primary_key('view_mode_page', $schema['view_mode_page']['primary key']);
 }
 
 /**

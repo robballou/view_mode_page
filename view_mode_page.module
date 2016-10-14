@@ -294,7 +294,12 @@ function view_mode_page_change_entity_view_mode() {
 
   // If the args are simply node/N we can get the node ID that way.
   if (arg(0) == $settings['entity_type'] && is_numeric(arg(1))) {
-    $nid = arg(1);
+    $entity_id = arg(1);
+    $entity_url = $settings['entity_type'] . '/' . $entity_id;
+  }
+  elseif (arg(0) == 'taxonomy' && arg(1) == 'term' && is_numeric(arg(2))) {
+    $entity_id = arg(2);
+    $entity_url = 'taxonomy/term/' . $entity_id;
   }
   else {
     // This is an alias, so we need to lookup the path of the node based on
@@ -321,19 +326,20 @@ function view_mode_page_change_entity_view_mode() {
 
     // Parse out the nid.
     $source_path_array = explode('/', $source_path);
-    $nid = array_pop($source_path_array);
+    $entity_id = array_pop($source_path_array);
+    $entity_url = $settings['entity_type'] . '/' . $entity_id;
   }
 
   // get the local tasks for the entity path by temporarily setting the
   // $_GET['q'] to the entity path, running menu_local_tasks(), and then
   // restoring
   $q = $_GET['q'];
-  $_GET['q'] = $settings['entity_type'] . '/' . $nid;
+  $_GET['q'] = $entity_url;
   menu_local_tasks();
   $_GET['q'] = $q;
 
   // get the entity
-  $entity = entity_load($settings['entity_type'], array($nid));
+  $entity = entity_load($settings['entity_type'], array($entity_id));
   if ($entity) {
     // entity_load returns an array
     $entity = array_pop($entity);

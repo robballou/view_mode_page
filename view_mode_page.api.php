@@ -223,3 +223,22 @@ function hook_view_mode_page_entity_patterns_deleted($entity_type = NULL, $conte
  */
 function hook_view_mode_page_patterns_deleted($content_type = NULL, $view_mode = NULL, $pattern = NULL) {
 }
+
+/**
+ * Hook to provide custom logic for finding an entity based on URL.
+ *
+ * @param array $url
+ *   An array of the current URL.
+ * @param string $pattern
+ *   The pattern string.
+ *
+ * @return array
+ *   An array of the entity ID and the entity's source URL.
+ */
+function hook_view_mode_page_get_entity_for_url($url, $pattern) {
+
+  if ($url[0] == 'some' && $url[1] == 'thing') {
+    return array($url[2], 'thing/' . $url[2]);
+  }
+
+}

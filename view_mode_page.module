@@ -320,14 +320,22 @@ function view_mode_page_change_entity_view_mode() {
 
     // Look that up...
     $source_path = drupal_lookup_path('source', $node_url);
-    if (!$source_path) {
-      return drupal_not_found();
+    if ($source_path) {
+      // Parse out the nid.
+      $source_path_array = explode('/', $source_path);
+      $entity_id = array_pop($source_path_array);
+      $entity_url = $settings['entity_type'] . '/' . $entity_id;
+    }
+    else {
+      $results = module_invoke_all('view_mode_page_get_entity_for_url', $url_array, $settings['url_pattern']);
+      if ($results) {
+        list($entity_id, $entity_url) = array_shift($results);
+      }
     }
 
-    // Parse out the nid.
-    $source_path_array = explode('/', $source_path);
-    $entity_id = array_pop($source_path_array);
-    $entity_url = $settings['entity_type'] . '/' . $entity_id;
+    if (!$entity_id) {
+      return drupal_not_found();
+    }
   }
 
   // get the local tasks for the entity path by temporarily setting the

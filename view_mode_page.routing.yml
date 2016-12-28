@@ -1,0 +1,23 @@
+view_mode_page.display_entity:
+  path: '/view_mode_page/{view_mode}/{entity_type}/{entity_id}'
+  defaults:
+    _controller: '\Drupal\view_mode_page\Controller\MainController::displayEntity'
+  requirements:
+    _permission: 'access content'
+
+entity.view_mode_page_pattern.collection:
+  path: '/admin/config/search/view-mode-page'
+  defaults:
+    _entity_list: 'view_mode_page_pattern'
+    _title: 'View mode page'
+  requirements:
+    _permission: 'administer view_mode_page'
+
+entity.view_mode_page_pattern.add_form:
+  path: '/admin/config/search/view-mode-page/add'
+  defaults:
+    _entity_form: 'view_mode_page_pattern.default'
+    _title: 'Add pattern'
+    tempstore_id: 'view_mode_page.pattern'
+  requirements:
+    _permission: 'administer view_mode_page'

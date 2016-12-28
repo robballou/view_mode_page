@@ -1,0 +1,5 @@
+entity.view_mode_page_pattern.collection:
+  title: 'View mode page'
+  description: 'Configure paths which should display an entity in a given view_mode.'
+  parent: system.admin_config_search
+  route_name: entity.view_mode_page_pattern.collection

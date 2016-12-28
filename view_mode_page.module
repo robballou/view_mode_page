@@ -1,0 +1,29 @@
+<?php
+
+/**
+ * @file
+ * Contains view_mode_page module.
+ *
+ * @TODO: Custom title (optionally) per pattern path
+ * @TODO: Set canonical (optionally) per pattern path
+ */
+
+use Drupal\Core\Routing\RouteMatchInterface;
+
+/**
+ * Implements hook_help().
+ */
+function view_mode_page_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    case 'help.page.view_mode_page':
+      $output = '';
+      $output .= '<p>' . t('Makes it possible to create (additional) paths where entities will be shown in a given view_mode') . '</p>';
+      return $output;
+
+    case 'entity.view_mode_page_pattern.collection':
+      $output = '<p>' . t('This page provides a list of all view_mode patterns on the site and allows you to edit and reorder them.') . '</p>';
+      return $output;
+
+    default:
+  }
+}

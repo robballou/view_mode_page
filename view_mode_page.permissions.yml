@@ -1,0 +1,3 @@
+administer view_mode_page:
+  title: 'Administer view_mode_page'
+  restrict access: TRUE

@@ -1,0 +1,14 @@
+services:
+  view_mode_page.path_processor:
+    class: Drupal\view_mode_page\PathProcessor\DynamicPathProcessor
+    calls:
+      - [setContainer, ['@service_container']]
+    tags:
+      - { name: path_processor_inbound, priority: 250 }
+    arguments: ['@path.alias_manager', '@entity_type.manager', '@view_mode_page.repository.pattern']
+  view_mode_page.manager.alias_type:
+    class: Drupal\view_mode_page\AliasTypeManager
+    parent: default_plugin_manager
+  view_mode_page.repository.pattern:
+    class: Drupal\view_mode_page\Repository\ViewmodepagePatternRepository
+    arguments: ['@entity_type.manager']

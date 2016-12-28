@@ -1,0 +1,11 @@
+name: View mode page
+type: module
+description: Makes it possible to create (additional) paths where entities will be shown in a given view_mode
+core: 8.x
+package: Other
+
+dependencies:
+- drupal:system (>= 8.1.0)
+- drupal:path
+- ctools:ctools
+- token:token

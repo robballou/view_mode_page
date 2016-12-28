@@ -1,0 +1,5 @@
+entity.view_mode_page_pattern.add_form:
+  route_name: 'entity.view_mode_page_pattern.add_form'
+  title: 'Add view_mode pattern'
+  appears_on:
+    - entity.view_mode_page_pattern.collection

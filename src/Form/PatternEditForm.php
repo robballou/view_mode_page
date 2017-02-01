@@ -124,7 +124,15 @@ class PatternEditForm extends EntityForm {
       '#size'          => 65,
       '#maxlength'     => 1280,
       '#required'      => TRUE,
-      '#description'   => $this->t('Path pattern must include % for the regular entity url (e.g. "<em>/%/teaser</em>")'),
+      '#description'   => $this->t('
+      <strong>Must include % for the regular entity url/alias placeholder</strong> (path patterns are always based on the regular entity url\'s/aliases).<br>
+      Example scenario:<br>
+      <em>Show a node as "teaser" when the entity url/alias has a suffix of "/summary".</em><br>
+      - Path pattern: "/%/summary".<br>
+      - Entity type: "Content".<br>
+      - View mode: "Teaser".<br>
+      - If you have a content page which regular entity url/alias is "/my/great/page" and "node/123".<br>
+      - You can now visit "/my/great/page/summary" and "/node/123/summary" which will render that node in the given view mode.'),
     );
 
     $options = [];

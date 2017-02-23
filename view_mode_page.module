@@ -27,3 +27,17 @@ function view_mode_page_help($route_name, RouteMatchInterface $route_match) {
     default:
   }
 }
+
+/**
+ * Implements hook_block_build_alter().
+ *
+ * Adds additional cache_contexts to the system_main_block, to prevent incorrect caching of a single view_mode (when using a path alias).
+ *
+ * @param array $build
+ * @param \Drupal\Core\Block\BlockPluginInterface $block
+ */
+function view_mode_page_block_build_alter(array &$build, \Drupal\Core\Block\BlockPluginInterface $block) {
+  if ($block->getBaseId() == 'system_main_block') {
+    $build['#cache']['contexts'][] = 'url.path';
+  }
+}

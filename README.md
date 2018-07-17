@@ -1,3 +1,7 @@
+# PROJECT ARCHIVED ON GITHUB
+
+See drupal.org project for ongoing development.
+
 # Introduction
 
 This module helps create separate pages for different view modes for a given
